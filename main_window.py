@@ -15,7 +15,7 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.title('PassQR')
-        self.geometry("600x400")
+        self.geometry("585x400")
         self.resizable(False,False)
 
         # create sidebar frame with widgets
@@ -43,7 +43,9 @@ class App(customtkinter.CTk):
 
         #Default Home Label
         self.label1 = customtkinter.CTkLabel(self, text="Welcome to PassQR", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.label1.place(x=300, y=30)
+        self.label1.place(x=285, y=30)
+
+        self.label2 = customtkinter.CTkLabel(self, text="Pass Files List", font=customtkinter.CTkFont(size=13, weight="bold"))
 
         #Pass Files Listbox
         self.passfiles_lb = tk.Listbox(self, selectmode=tk.MULTIPLE, height=9)
@@ -69,7 +71,7 @@ class App(customtkinter.CTk):
         self.convertall = customtkinter.CTkButton(self, text="Convert All Files", command=self.convertAllFiles, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Refresh Button
-        self.refresh_files = customtkinter.CTkButton(self, text="Refresh Pass Store", command=self.refresh, fg_color="darkred", hover_color="#D2042D", width=185)
+        self.refresh_files = customtkinter.CTkButton(self, text="Refresh List", command=self.refresh, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Scan QR Button
         self.scan_button = customtkinter.CTkButton(self, text='Scan QR Code', command=lambda: import_qr.scan_qr_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
@@ -145,14 +147,14 @@ class App(customtkinter.CTk):
             for y in range(0, len(self.subdir_file_arr)):
                 self.passfiles_lb.insert(y, self.subdir_file_arr[y])
             
-            messagebox.showinfo('Refreshed', 'Your pass store has been refreshed.')
+            messagebox.showinfo('Refreshed', 'Your pass files list has been refreshed.')
         else:
             messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.')
 
     def home_window(self):
         self.label1.configure(text="Welcome to PassQR")
-        self.label1.place(x=300, y=30)
 
+        self.label2.place_forget()
         self.passfiles_lb.place_forget()
         self.convert.place_forget()
         self.convertall.place_forget()
@@ -162,25 +164,26 @@ class App(customtkinter.CTk):
         self.gen_gpg_pass_button.place_forget()
 
     def convert_window(self):
-        self.label1.configure(text="PassQR-Convert")
-        self.label1.place(x=300, y=30)
+        self.label1.configure(text="Backup Passwords")
 
         self.scan_button.place_forget()
         self.shamir_button.place_forget()
         self.gen_gpg_pass_button.place_forget()
 
-        self.passfiles_lb.place(x=300, y=70)
-        self.convert.place(x=300, y=250)
-        self.convertall.place(x=300, y=290)
-        self.refresh_files.place(x=300, y=330)
+        self.label2.place(x=330, y=55)
+        self.passfiles_lb.place(x=285, y=85)
+        self.convert.place(x=285, y=250)
+        self.convertall.place(x=285, y=290)
+        self.refresh_files.place(x=285, y=330)
 
     def import_window(self):
-        self.label1.configure(text="PassQR-Import")
-        self.label1.place(x=310, y=30)
+        self.label1.configure(text="Recover Passwords")
+
         self.scan_button.place(x=270, y=140)
         self.shamir_button.place(x=270, y=180)
         self.gen_gpg_pass_button.place(x=270, y=220)
 
+        self.label2.place_forget()
         self.passfiles_lb.place_forget()
         self.convert.place_forget()
         self.convertall.place_forget()
@@ -207,10 +210,6 @@ class App(customtkinter.CTk):
         self.scan_button.configure(state= customtkinter.NORMAL)
         self.shamir_button.configure(state= customtkinter.NORMAL)
         self.gen_gpg_pass_button.configure(state= customtkinter.NORMAL)
-
-    def cancel_convert(self, newWindow):
-        newWindow.destroy()
-        self.enable_button()
 
     def disable_close(self):
         pass

@@ -28,6 +28,15 @@ prime = 885911280445661314349040360393507317170478541097150373342910055055679257
 def disable_close():
     pass
 
+def cancel_convert(self, window):
+    if messagebox.askyesno('Cancel Backup', 'Are you sure to cancel your backup process?', parent=window):
+        global error_count
+        global re_passp_error_count
+        error_count = 3
+        re_passp_error_count = 3
+        window.destroy()
+        main_window.App.enable_button(self)
+
 def image_grid(imgs, rows, cols):
 
     len(imgs) == rows*cols
@@ -329,7 +338,7 @@ def sym_enc(passp, decrypt_data, files, copy, threshold, copy_windows, self):
     
     qr_convert(json_list, copy, passp, threshold, self)
 
-def get_copy_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self):
+def get_copy_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button):
     copy_number = spin_box.get()
     
     if copy_number == "1":
@@ -356,9 +365,10 @@ def get_copy_number(re_passp, decrypt_data, files, copy_windows, label2, label3,
         spin_box.place(x=125,y=125)
     
         enterbutton.place(x=200,y=125)
+        exit_button.place(x=275,y=125)
         enterbutton.configure(command=lambda: sym_enc(re_passp, decrypt_data, files, copy_number, spin_box.get(), copy_windows, self))
 
-def set_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self):
+def set_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
     sym_passphrase_windows.geometry("500x150")
     sym_passphrase_windows.title("Number of Copies")
     re_passp_entry.destroy()
@@ -370,12 +380,12 @@ def set_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, re_pa
     spin_box = tk.Spinbox(sym_passphrase_windows, from_=1, to=10, textvariable=current_value, width=3, state = 'readonly', wrap=True, bg="black")
     spin_box.place(x=150,y=65)
 
-    enterbutton.configure(command=lambda: get_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, label2, label3, label4, spin_box, enterbutton, self))
+    enterbutton.configure(command=lambda: get_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button))
 
-def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self):
+def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button):
     re_passp = re_passp_entry.get()
     if sym_passp == re_passp:
-        set_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self)
+        set_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
 
     else:
         global re_passp_error_count
@@ -390,7 +400,7 @@ def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data
         else:
             messagebox.showinfo('Bad Passphrase', f'Passphrases do not match (try {re_passp_error_count} out of 3)', parent=sym_passphrase_windows)
 
-def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, files, self):
+def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, files, self, exit_button):
     special_characters = "!@#$%^&*()-+?_=,<>/"
     alphabet = "abcdefghijklmnopqrstuvwxyz"  
     numbers = "0123456789"
@@ -401,7 +411,7 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
         label3.configure(text="Please re-enter your new passphrase")
         re_passp_entry = customtkinter.CTkEntry(sym_passphrase_windows, validate="key", validatecommand=vcmd, show="*")
         re_passp_entry.place(x=130,y=65)
-        enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self))
+        enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button))
 
     else:
         if messagebox.askyesno('Weak Passphrase', 'Your passphrase is not considered strong. Do you wish to use this one?', parent=sym_passphrase_windows):
@@ -409,14 +419,13 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
             label3.configure(text="Please re-enter your new passphrase")
             re_passp_entry = customtkinter.CTkEntry(sym_passphrase_windows, validate="key", validatecommand=vcmd, show="*")
             re_passp_entry.place(x=130,y=65)
-            enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self))
+            enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button))
 
 def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     newWindow.title("Passphrase for Symmetric Encryption")
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
 
     passp_entry.destroy()
-    exit_button.destroy()
 
     label2.configure(text="Passphrase for Symmetric Encryption")
     label3.configure(text= "Please create a new passphrase for encryption.")
@@ -432,7 +441,7 @@ def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, la
     sym_passp_entry = customtkinter.CTkEntry(newWindow, validate="key", validatecommand=vcmd, show="*")
     sym_passp_entry.place(x=130,y=65)
 
-    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, files, self))
+    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, files, self, exit_button))
 
 def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     if passp:
@@ -479,5 +488,5 @@ def asym_dec_window(self, pass_files, files):
     enter_button = customtkinter.CTkButton(newWindow, text='Enter', command=lambda: get_entry(newWindow, passp_entry.get(), pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self), fg_color="darkred", hover_color="#D2042D", width=60)
     enter_button.place(x=50,y=100)
 
-    exit_button = customtkinter.CTkButton(newWindow, text="Cancel Convert", command=lambda: main_window.App.cancel_convert(self, newWindow), fg_color="darkred", hover_color="#D2042D")
+    exit_button = customtkinter.CTkButton(newWindow, text="Cancel Convert", command=lambda: cancel_convert(self, newWindow), fg_color="darkred", hover_color="#D2042D")
     exit_button.place(x=125,y=100)
