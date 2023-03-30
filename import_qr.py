@@ -165,7 +165,7 @@ def scan_qr_start(self):
         scanned_values = []
         main_window.App.disable_button(self)
         scanWindow = customtkinter.CTkToplevel(self)
-        scanWindow.title("QR Code Scanner")
+        scanWindow.title("Recover Passwords")
         scanWindow.geometry("870x550")
         scanWindow.resizable(False,False)
         scanWindow.protocol("WM_DELETE_WINDOW", disable_close)
@@ -187,7 +187,7 @@ def scan_qr_start(self):
         status_frame = customtkinter.CTkFrame(scanWindow, width=620, height=55, corner_radius=15)
         status_frame.place(x=10, y=490)
 
-        status_label = customtkinter.CTkLabel(status_frame, text="Please scan the QR code above the camera.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
+        status_label = customtkinter.CTkLabel(status_frame, text="Please scan your QR code on the camera above.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
         status_label.place(x=20, y=13)
 
         delete_QR_button = customtkinter.CTkButton(sidebar_frame1, text='Delete QR Code' ,command=lambda: delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values),  fg_color="darkred", hover_color="#D2042D")
@@ -325,7 +325,7 @@ def shamir_scan_start(self):
             shamir_scan_values = []
             main_window.App.disable_button(self)
             shamirWindow = customtkinter.CTkToplevel(self)
-            shamirWindow.title("QR Code Scanner")
+            shamirWindow.title("Retrieve Passphrase")
             shamirWindow.geometry("870x550")
             shamirWindow.resizable(False,False)
             shamirWindow.protocol("WM_DELETE_WINDOW", disable_close)
@@ -347,7 +347,7 @@ def shamir_scan_start(self):
             status_frame = customtkinter.CTkFrame(shamirWindow, width=620, height=55, corner_radius=15)
             status_frame.place(x=10, y=490)
 
-            status_label = customtkinter.CTkLabel(status_frame, text="Please scan the QR code above the camera.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
+            status_label = customtkinter.CTkLabel(status_frame, text="Please scan your QR code on the camera above.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
             status_label.place(x=20, y=13)
 
             delete_QR_button = customtkinter.CTkButton(sidebar_frame2, text='Delete QR Code' ,command=lambda: delete_shamir_value(status_label, continue_button, shamir_scan_values, scanned_shamir_listbox),  fg_color="darkred", hover_color="#D2042D")

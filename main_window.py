@@ -15,10 +15,20 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.title('PassQR')
-        self.geometry("585x400")
-        self.resizable(False,False)
+        width = 585
+        height = 400
+        
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        
+        x = (screen_width/2) - (width/2)
+        y = (screen_height/2) - (height/2)
 
-        # create sidebar frame with widgets
+        #Centering the application
+        self.geometry('%dx%d+%d+%d' % (width, height, x, y))
+        self.resizable(False,False)
+        self.protocol("WM_DELETE_WINDOW", self.quit_app)
+
         self.sidebar_frame = customtkinter.CTkFrame(self, width=170, height=700, corner_radius=0)
         self.sidebar_frame.place(x=0, y=0)
 
@@ -30,22 +40,37 @@ class App(customtkinter.CTk):
         self.sidebar_button_1.place(x=15, y=80)
 
         #Convert Tab
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Backup Passwords", command=self.convert_window, fg_color="darkred", hover_color="#D2042D")
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Backup", command=self.convert_window, fg_color="darkred", hover_color="#D2042D")
         self.sidebar_button_2.place(x=15, y=130)
 
         #Import Tab
-        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, text="Recover Passwords", command=self.import_window,  fg_color="darkred", hover_color="#D2042D")
+        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, text="Recover", command=self.import_window,  fg_color="darkred", hover_color="#D2042D")
         self.sidebar_button_3.place(x=15, y=180)
 
         #Exit Button
         self.exit_button = customtkinter.CTkButton(self.sidebar_frame, text="Exit", command=self.quit_app,  fg_color="darkred", hover_color="#D2042D")
-        self.exit_button.place(x=15, y=330)
+        self.exit_button.place(x=15, y=350)
 
         #Default Home Label
-        self.label1 = customtkinter.CTkLabel(self, text="Welcome to PassQR", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.label1.place(x=285, y=30)
+        self.label1 = customtkinter.CTkLabel(self, text="Home", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.label1.place(x=340, y=30)
 
         self.label2 = customtkinter.CTkLabel(self, text="Pass Files List", font=customtkinter.CTkFont(size=13, weight="bold"))
+
+        self.home_label1 = customtkinter.CTkLabel(self, text="PassQR has been developed to backup and recover\n passwords securely and easlily that is located on pass.")
+        self.home_label1.place(x=200, y=60)
+
+        self.home_label2 = customtkinter.CTkLabel(self, text="Backup", font=customtkinter.CTkFont(size=13, weight="bold"))
+        self.home_label2.place(x=340, y=95)
+
+        self.home_label3 = customtkinter.CTkLabel(self, text="Backing up your passwords is really simple. You can\n backup your passwords however you like. It can be\n backed up all together or you can backup passwords\n by choosing from the list. If you made any changes in\n your pass repository, you can hit refresh button to\n refresh your pass list.")
+        self.home_label3.place(x=200, y=120)
+
+        self.home_label4 = customtkinter.CTkLabel(self, text="Recover", font=customtkinter.CTkFont(size=13, weight="bold"))
+        self.home_label4.place(x=340, y=220)
+
+        self.home_label5 = customtkinter.CTkLabel(self, text="To recover your passwords, firstly you scan your QR\n codes. After a successful scan, you have to provide\n your passphrase that you have generated in backup\n process. Once that is done, you are good to go! If\n you forget your passphrase and you have more than\n one copy, do not worry. You can use retreive your\n passphrase by scanning your first QR code of your copies.\n Also, you can generate a new GPG key and pass storage.")
+        self.home_label5.place(x=190, y=245)
 
         #Pass Files Listbox
         self.passfiles_lb = tk.Listbox(self, selectmode=tk.MULTIPLE, height=9)
@@ -65,16 +90,16 @@ class App(customtkinter.CTk):
             self.passfiles_lb.insert(x, self.subdir_file_arr[x])
         
         #Convert Button
-        self.convert = customtkinter.CTkButton(self, text="Convert Selected Files", command=self.convertFiles, fg_color="darkred", hover_color="#D2042D", width=185)
+        self.convert = customtkinter.CTkButton(self, text="Backup Selected Passwords", command=self.convertFiles, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Convert All Button
-        self.convertall = customtkinter.CTkButton(self, text="Convert All Files", command=self.convertAllFiles, fg_color="darkred", hover_color="#D2042D", width=185)
+        self.convertall = customtkinter.CTkButton(self, text="Backup All Passwords", command=self.convertAllFiles, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Refresh Button
         self.refresh_files = customtkinter.CTkButton(self, text="Refresh List", command=self.refresh, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Scan QR Button
-        self.scan_button = customtkinter.CTkButton(self, text='Scan QR Code', command=lambda: import_qr.scan_qr_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
+        self.scan_button = customtkinter.CTkButton(self, text='Recover Passwords', command=lambda: import_qr.scan_qr_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
 
         #Retreive Passphrase with Shamir Button
         self.shamir_button = customtkinter.CTkButton(self, text='Retrieve Passphrase', command=lambda:import_qr.shamir_scan_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
@@ -152,7 +177,13 @@ class App(customtkinter.CTk):
             messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.')
 
     def home_window(self):
-        self.label1.configure(text="Welcome to PassQR")
+        self.label1.configure(text="Home")
+
+        self.home_label1.place(x=200, y=60)
+        self.home_label2.place(x=340, y=95)
+        self.home_label3.place(x=200, y=120)
+        self.home_label4.place(x=340, y=220)
+        self.home_label5.place(x=190, y=245)
 
         self.label2.place_forget()
         self.passfiles_lb.place_forget()
@@ -164,8 +195,13 @@ class App(customtkinter.CTk):
         self.gen_gpg_pass_button.place_forget()
 
     def convert_window(self):
-        self.label1.configure(text="Backup Passwords")
-
+        self.label1.configure(text="Backup")
+        
+        self.home_label1.place_forget()
+        self.home_label2.place_forget()
+        self.home_label3.place_forget()
+        self.home_label4.place_forget()
+        self.home_label5.place_forget()
         self.scan_button.place_forget()
         self.shamir_button.place_forget()
         self.gen_gpg_pass_button.place_forget()
@@ -177,12 +213,17 @@ class App(customtkinter.CTk):
         self.refresh_files.place(x=285, y=330)
 
     def import_window(self):
-        self.label1.configure(text="Recover Passwords")
+        self.label1.configure(text="Recover")
 
         self.scan_button.place(x=270, y=140)
         self.shamir_button.place(x=270, y=180)
         self.gen_gpg_pass_button.place(x=270, y=220)
 
+        self.home_label1.place_forget()
+        self.home_label2.place_forget()
+        self.home_label3.place_forget()
+        self.home_label4.place_forget()
+        self.home_label5.place_forget()
         self.label2.place_forget()
         self.passfiles_lb.place_forget()
         self.convert.place_forget()
@@ -223,5 +264,4 @@ class App(customtkinter.CTk):
 
 if __name__ == "__main__":
     app = App()
-    app.protocol("WM_DELETE_WINDOW", App.quit_app)
     app.mainloop()

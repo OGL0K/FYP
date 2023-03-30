@@ -18,7 +18,7 @@ customtkinter.set_appearance_mode("System")
 
 pwd = os.path.expanduser('~')
 qr_path = f"{pwd}/Documents/.QR-Code"
-final_qr_path = f'{pwd}/Documents/Pass-QRCode'
+final_qr_path = f'{pwd}/Documents/PassQR'
 
 replay = 0
 error_count = 3
@@ -187,7 +187,7 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             img.save(f'{final_qr_path}/QR-File1.png')
 
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully')
+            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR code has been stored in "Documents/PassQR".' )
             
         else:
             passp = passp.encode('latin-1')
@@ -221,7 +221,7 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
                     img.save(f'{final_qr_path}/QR-File1-Copy{x}.png')
 
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully')
+            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR codes has been stored in "Documents/PassQR".')
 
     else:
         if os.path.exists(final_qr_path):
@@ -259,7 +259,7 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             combine_img()
             shutil.rmtree(qr_path)
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully')
+            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR codes has been stored in "Documents/PassQR".')
 
         else:
             global replay
@@ -324,7 +324,7 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             replay = 0
             shutil.rmtree(qr_path)
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully')
+            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR codes has been stored in "Documents/PassQR".')
 
 def sym_enc(passp, decrypt_data, files, copy, threshold, copy_windows, self):
     copy_windows.destroy()
@@ -400,35 +400,56 @@ def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data
         else:
             messagebox.showinfo('Bad Passphrase', f'Passphrases do not match (try {re_passp_error_count} out of 3)', parent=sym_passphrase_windows)
 
-def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, files, self, exit_button):
+def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, files, self, exit_button, label5, label6):
     special_characters = "!@#$%^&*()-+?_=,<>/"
     alphabet = "abcdefghijklmnopqrstuvwxyz"  
     numbers = "0123456789"
     sym_passp = sym_passp_entry.get()
 
     if any(c in special_characters or c in numbers for c in sym_passp) and any(c in alphabet.upper() or c in alphabet for c in sym_passp) and len(sym_passp) >=8:
+        sym_passphrase_windows.geometry("500x150")
         sym_passp_entry.destroy()
         label3.configure(text="Please re-enter your new passphrase")
+        label4.place(x=50,y=65)
+        label5.destroy()
+        label6.destroy()
         re_passp_entry = customtkinter.CTkEntry(sym_passphrase_windows, validate="key", validatecommand=vcmd, show="*")
         re_passp_entry.place(x=130,y=65)
+        enterbutton.place(x=50,y=100)
+        exit_button.place(x=125,y=100)
         enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button))
 
     else:
         if messagebox.askyesno('Weak Passphrase', 'Your passphrase is not considered strong. Do you wish to use this one?', parent=sym_passphrase_windows):
+            sym_passphrase_windows.geometry("500x150")
             sym_passp_entry.destroy()
             label3.configure(text="Please re-enter your new passphrase")
+            label4.place(x=50,y=65)
+            label5.destroy()
+            label6.destroy()
             re_passp_entry = customtkinter.CTkEntry(sym_passphrase_windows, validate="key", validatecommand=vcmd, show="*")
             re_passp_entry.place(x=130,y=65)
+            enterbutton.place(x=50,y=100)
+            exit_button.place(x=125,y=100)
             enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button))
 
 def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     newWindow.title("Passphrase for Symmetric Encryption")
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
+    newWindow.geometry("500x200")
 
     passp_entry.destroy()
 
     label2.configure(text="Passphrase for Symmetric Encryption")
     label3.configure(text= "Please create a new passphrase for encryption.")
+    label4.place(x=50,y=120)
+
+    label5 = customtkinter.CTkLabel(newWindow, text ="To create a secure passphrase, it should be at least 8 characters")
+    label5.place(x=50,y=65)
+
+    label6 = customtkinter.CTkLabel(newWindow, text ="long and contain at least 1 digit or special character.")
+    label6.place(x=50,y=85)
+    
 
     def validate(P):
         if len(P) > 30:
@@ -439,9 +460,11 @@ def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, la
 
     vcmd = (newWindow.register(validate), '%P')
     sym_passp_entry = customtkinter.CTkEntry(newWindow, validate="key", validatecommand=vcmd, show="*")
-    sym_passp_entry.place(x=130,y=65)
+    sym_passp_entry.place(x=130,y=120)
 
-    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, files, self, exit_button))
+    enter_button.place(x=50,y=160)
+    exit_button.place(x=125,y=160)
+    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, files, self, exit_button, label5, label6))
 
 def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     if passp:
