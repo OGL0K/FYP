@@ -237,18 +237,18 @@ def scan_qr_start(self):
                         status_label.configure(text=f"{convert_package['QR-Name']} has been scanned successfully.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="green")
                         status_label.place(x=20, y=13)
                         continue_button.place(x=48, y=440)
-                        time.sleep(2)
+                        time.sleep(1.5)
 
                     elif s[0].data.decode('ascii') in scanned_values:
                         convert_package = json.loads(s[0].data.decode('ascii'))
                         status_label.configure(text=f"Error: {convert_package['QR-Name']} has been already scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
-                        time.sleep(2)
+                        time.sleep(1.5)
                 
                 except json.decoder.JSONDecodeError:
                     status_label.configure(text=f"Invalid QR Code has been scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                     status_label.place(x=20, y=13)
-                    time.sleep(2)
+                    time.sleep(1.5)
 
                 except tk.TclError:    
                     pass
@@ -312,7 +312,6 @@ def delete_shamir_value(status_label, continue_button, shamir_scan_values, scann
 def shamir_scan_start(self):
     if messagebox.askyesno('Scan QR', 'Are you sure to retreive your passphrase?'):
         try:
-            
             cam = cv2.VideoCapture(0)
             cam.set(3, 640)
             cam.set(4, 480)
@@ -378,7 +377,7 @@ def shamir_scan_start(self):
                     if s[0].data.decode('ascii')[1:20] != '"Packet_Number": 1,':
                         status_label.configure(text='Error: Invalid QR code has been scanned.', font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
-                        time.sleep(2)
+                        time.sleep(1.5)
 
                     elif s[0].data.decode('ascii') not in shamir_scan_values:
                         array = []
@@ -405,18 +404,18 @@ def shamir_scan_start(self):
                         status_label.configure(text=f"{convert_shamir['QR-Name']} has been scanned successfully.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="green")
                         status_label.place(x=20, y=13)
                         continue_button.place(x=48, y=440)
-                        time.sleep(2)
+                        time.sleep(1.5)
 
                     elif s[0].data.decode('ascii') in shamir_scan_values:
                         convert_shamir = json.loads(s[0].data.decode('ascii'))
                         status_label.configure(text=f"Error: {convert_shamir['QR-Name']} has been already scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
-                        time.sleep(2)
+                        time.sleep(1.5)
                 
                 except KeyError:
                     status_label.configure(text=f"Error: Passphrase value does not include in this QR Code.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                     status_label.place(x=20, y=13)
-                    time.sleep(2)
+                    time.sleep(1.5)
 
                 except IndexError:
                     pass
@@ -430,26 +429,36 @@ def shamir_scan_start(self):
 def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
     global re_passp_error_count
     if passphrase == input_entry4.get():
-          
-        if os.path.exists(password_store):
-            shutil.rmtree(password_store)
-        else:
-            pass
-
-        gpg = gnupg.GPG()
-
-        input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
-            key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519', expire_date='2y')
-
-        key = gpg.gen_key(input_data)
-
-        command2 = ["pass", "init", f"{key}"]
-        out2 = subprocess.check_output(command2, universal_newlines=False, shell=False)
+        try:
+            command1 = ["pass"]
+            out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL, shell=False)
         
-        messagebox.showinfo('Success', 'New GPG key and pass store generated.', parent=gen_gpg_pass_win)
-        gen_gpg_pass_win.destroy()
-        main_window.App.refresh(self)
-        main_window.App.enable_button(self)
+        except FileNotFoundError:
+            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".')
+            re_passp_error_count = 3
+            gen_gpg_pass_win.destroy()
+            main_window.App.enable_button(self)
+        
+        else:
+            if os.path.exists(password_store):
+                shutil.rmtree(password_store)
+            else:
+                pass
+
+            gpg = gnupg.GPG()
+
+            input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
+                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519', expire_date='2y')
+
+            key = gpg.gen_key(input_data)
+
+            command2 = ["pass", "init", f"{key}"]
+            out2 = subprocess.check_output(command2, universal_newlines=False, shell=False)
+            
+            messagebox.showinfo('Success', 'New GPG key and pass store generated.', parent=gen_gpg_pass_win)
+            gen_gpg_pass_win.destroy()
+            main_window.App.refresh(self)
+            main_window.App.enable_button(self)
 
     else:
         re_passp_error_count -= 1
@@ -460,7 +469,7 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
         else:
             messagebox.showinfo('Bad Passphrase', f'Passphrases do not match (try {re_passp_error_count} out of 3)', parent=gen_gpg_pass_win)
 
-def get_passphrase(self, input_label, input_entry3, email, enter_button, gen_gpg_pass_win, name):
+def get_passphrase(self, input_label, input_label2, input_entry3, email, enter_button, gen_gpg_pass_win, name, label5, label6, cancel_button):
     special_characters = "!@#$%^&*()-+?_=,<>/"
     alphabet = "abcdefghijklmnopqrstuvwxyz"  
     numbers = "0123456789"
@@ -470,34 +479,57 @@ def get_passphrase(self, input_label, input_entry3, email, enter_button, gen_gpg
 
     else:
         if any(c in special_characters or c in numbers for c in passphrase) and any(c in alphabet.upper() or c in alphabet for c in passphrase) and len(passphrase) >=8:
-            input_entry3.destroy()
+            gen_gpg_pass_win.geometry("420x150")
             input_label.configure(text="Please re-enter your new passphrase")
+            input_label2.place(x=50,y=63)
+            label5.destroy()
+            label6.destroy()
+            input_entry3.destroy()
             input_entry4 = customtkinter.CTkEntry(gen_gpg_pass_win, show="*")
-            input_entry4.place(x=130,y=60)
+            input_entry4.place(x=130,y=63)
             enter_button.configure(command=lambda: gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win))
+            enter_button.place(x=50,y=100)
+            cancel_button.place(x=125,y=100)
 
         else:
             if messagebox.askyesno('Weak Passphrase', 'Your passphrase is not considered strong. Do you wish to use this one?', parent=gen_gpg_pass_win):
-                input_entry3.destroy()
+                gen_gpg_pass_win.geometry("420x150")
                 input_label.configure(text="Please re-enter your new passphrase")
+                input_label2.place(x=50,y=63)
+                label5.destroy()
+                label6.destroy()
+                input_entry3.destroy()
                 input_entry4 = customtkinter.CTkEntry(gen_gpg_pass_win, show="*")
-                input_entry4.place(x=130,y=60)
+                input_entry4.place(x=130,y=63)
                 enter_button.configure(command=lambda: gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win))
+                enter_button.place(x=50,y=100)
+                cancel_button.place(x=125,y=100)
 
-def get_email(self, input_label, input_label2, input_entry2, enter_button, gen_gpg_pass_win, name):
+def get_email(self, input_label, input_label2, input_entry2, enter_button, gen_gpg_pass_win, name, cancel_button):
     email = input_entry2.get()
     regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]{1,}\b"
     if re.fullmatch(regex, email):
+        gen_gpg_pass_win.geometry("500x200")
         input_entry2.destroy()
         input_label.configure(text="Please create a passphrase.")
+
+        label5 = customtkinter.CTkLabel(gen_gpg_pass_win, text ="To create a secure passphrase, it should be at least 8 characters")
+        label5.place(x=50,y=63)
+
+        label6 = customtkinter.CTkLabel(gen_gpg_pass_win, text ="long and contain at least 1 digit or special character.")
+        label6.place(x=50,y=83)
+
         input_label2.configure(text="Passphrase:")
+        input_label2.place(x=50,y=118)
         input_entry3 = customtkinter.CTkEntry(gen_gpg_pass_win, show="*")
-        input_entry3.place(x=130,y=60)
-        enter_button.configure(command=lambda: get_passphrase(self, input_label, input_entry3, email, enter_button, gen_gpg_pass_win, name))
+        input_entry3.place(x=130,y=118)
+        enter_button.configure(command=lambda: get_passphrase(self, input_label, input_label2, input_entry3, email, enter_button, gen_gpg_pass_win, name, label5, label6, cancel_button))
+        enter_button.place(x=50,y=158)
+        cancel_button.place(x=125,y=158)
     else:
         messagebox.showinfo('Invalid Email','The email address you put is not valid.', parent=gen_gpg_pass_win)
 
-def get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win):
+def get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win, cancel_button):
     name = input_entry.get()
     if name == "":
         messagebox.showinfo('Invalid Name', 'Name should not be empty.')
@@ -506,13 +538,13 @@ def get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg
         input_label.configure(text="Please put your email address.")
         input_label2.configure(text="E-Mail:")
         input_entry2 = customtkinter.CTkEntry(gen_gpg_pass_win)
-        input_entry2.place(x=100,y=60)
-        enter_button.configure(command=lambda: get_email(self, input_label, input_label2, input_entry2, enter_button, gen_gpg_pass_win, name))
+        input_entry2.place(x=100,y=63)
+        enter_button.configure(command=lambda: get_email(self, input_label, input_label2, input_entry2, enter_button, gen_gpg_pass_win, name, cancel_button))
 
 def gen_gpg_pass_win(self):
     gen_gpg_pass_win = customtkinter.CTkToplevel(self)
     gen_gpg_pass_win.title("Generate GPG Key & Pass Storage")
-    gen_gpg_pass_win.geometry("400x150")
+    gen_gpg_pass_win.geometry("420x150")
     gen_gpg_pass_win.resizable(False,False)
     gen_gpg_pass_win.protocol("WM_DELETE_WINDOW", lambda: exit_gen_gpg_passp(self, gen_gpg_pass_win))
 
@@ -523,31 +555,28 @@ def gen_gpg_pass_win(self):
     input_label.place(x=50,y=35)
 
     input_label2 = customtkinter.CTkLabel(gen_gpg_pass_win, text ="Real Name:")
-    input_label2.place(x=50,y=60)
+    input_label2.place(x=50,y=63)
 
     input_entry = customtkinter.CTkEntry(gen_gpg_pass_win)
-    input_entry.place(x=125,y=60)
+    input_entry.place(x=125,y=63)
 
-    enter_button = customtkinter.CTkButton(gen_gpg_pass_win, text="Enter", command=lambda: get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win), width=60, fg_color="darkred", hover_color="#D2042D")
+    enter_button = customtkinter.CTkButton(gen_gpg_pass_win, text="Enter", command=lambda: get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win, cancel_button), width=60, fg_color="darkred", hover_color="#D2042D")
     enter_button.place(x=50,y=100)
 
     cancel_button = customtkinter.CTkButton(gen_gpg_pass_win, text="Cancel Generation", command=lambda: exit_gen_gpg_passp(self, gen_gpg_pass_win), fg_color="darkred", hover_color="#D2042D")
     cancel_button.place(x=125,y=100)
 
 def gen_gpg_pass_start(self):
-    if os.path.exists(password_store):
-        if messagebox.askyesno('Pass Storage Exists', 'There is an exiting pass storage located on your machine. Do you still wish to create a new one?'):
-            main_window.App.disable_button(self)
-            gen_gpg_pass_win(self)
-    else:
-        try:
-            command1 = ["pass"]
-            out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL, shell=False)
-
-        except FileNotFoundError:
-            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".')
-            main_window.App.enable_button(self)
-
-        except subprocess.CalledProcessError:
-            gen_gpg_pass_win(self)
+    try:
+        command1 = ["pass"]
+        out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL, shell=False)
+        
+    except FileNotFoundError:
+        messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".')
+        main_window.App.enable_button(self)
     
+    else:
+        if os.path.exists(password_store):
+            if messagebox.askyesno('Pass Storage Exists', 'There is an exiting pass storage located on your machine. Do you still wish to create a new one?'):
+                main_window.App.disable_button(self)
+                gen_gpg_pass_win(self)
