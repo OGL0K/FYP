@@ -122,7 +122,7 @@ class App(customtkinter.CTk):
             if messagebox.askyesno('Convert', f'Are you sure to convert the selected file(s)?'):
                 
                 kill_command = ["gpgconf", "--kill", "gpg-agent"]
-                kill_out = subprocess.check_output(kill_command, universal_newlines=False)
+                kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
                 self.disable_button()
 
                 for val in self.files:

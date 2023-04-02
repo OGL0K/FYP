@@ -56,7 +56,7 @@ def check_passp_and_import(self, final_json, passp_entry, passp_window):
             for i in range(0, len(final_json)):
                 decoded_data = base64.b64decode(final_json[i]["cipher"])
                 command1 = ["gpg", "-d", "--quiet", "--pinentry-mode=loopback", f"--passphrase={passp}"]
-                out1 = subprocess.check_output(command1, input=decoded_data, universal_newlines=False)
+                out1 = subprocess.check_output(command1, input=decoded_data, universal_newlines=False, shell=False)
                 out_array.append(out1)
 
         except subprocess.CalledProcessError:
@@ -74,7 +74,7 @@ def check_passp_and_import(self, final_json, passp_entry, passp_window):
         for i in range(0, len(final_json)):
                 os.makedirs(os.path.dirname(f'{password_store}/{final_json[i][f"File{i}"]}'), exist_ok=True)
                 command2 = ["gpg", "--batch", "--quiet", "--yes", "--encrypt", "-r", stripped, "-o" ,f"{password_store}/{final_json[i][f'File{i}']}.gpg"]
-                out2 = subprocess.check_output(command2, input=out_array[i], universal_newlines=False)
+                out2 = subprocess.check_output(command2, input=out_array[i], universal_newlines=False, shell=False)
         
         passp_window.destroy()
         messagebox.showinfo('Success', 'Your data have been imported to the pass store successfully.')
@@ -376,7 +376,7 @@ def shamir_scan_start(self):
                     scanlabel.update()
 
                     if s[0].data.decode('ascii')[1:20] != '"Packet_Number": 1,':
-                        status_label.configure(text='Error: Please only scan the first QR code of the copy.', font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
+                        status_label.configure(text='Error: Invalid QR code has been scanned.', font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
                         time.sleep(2)
 
@@ -430,49 +430,26 @@ def shamir_scan_start(self):
 def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
     global re_passp_error_count
     if passphrase == input_entry4.get():
-        try: 
-            if os.path.exists(password_store):
-                shutil.rmtree(password_store)
-            else:
-                pass
+          
+        if os.path.exists(password_store):
+            shutil.rmtree(password_store)
+        else:
+            pass
 
-            command1 = ["pass"]
-            out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL)
-            
-            gpg = gnupg.GPG()
+        gpg = gnupg.GPG()
 
-            input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
-                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519', expire_date='2y')
+        input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
+            key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519', expire_date='2y')
 
-            key = gpg.gen_key(input_data)
+        key = gpg.gen_key(input_data)
 
-            command2 = ["pass", "init", f"{key}"]
-            out2 = subprocess.check_output(command2, universal_newlines=False)
-            
-            messagebox.showinfo('Success', 'New GPG key and pass store generated.', parent=gen_gpg_pass_win)
-            gen_gpg_pass_win.destroy()
-            main_window.App.enable_button(self)
-
-        except FileNotFoundError:
-            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".')
-            gen_gpg_pass_win.destroy()
-            re_passp_error_count = 3
-            main_window.App.enable_button(self)
+        command2 = ["pass", "init", f"{key}"]
+        out2 = subprocess.check_output(command2, universal_newlines=False, shell=False)
         
-        except subprocess.CalledProcessError:
-            gpg = gnupg.GPG()
-
-            input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
-                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519', expire_date='2y')
-
-            key = gpg.gen_key(input_data)
-
-            command2 = ["pass", "init", f"{key}"]
-            out2 = subprocess.check_output(command2, universal_newlines=False)
-            
-            messagebox.showinfo('Success', 'New GPG key and pass store generated.')
-            gen_gpg_pass_win.destroy()
-            main_window.App.enable_button(self)
+        messagebox.showinfo('Success', 'New GPG key and pass store generated.', parent=gen_gpg_pass_win)
+        gen_gpg_pass_win.destroy()
+        main_window.App.refresh(self)
+        main_window.App.enable_button(self)
 
     else:
         re_passp_error_count -= 1
@@ -563,4 +540,14 @@ def gen_gpg_pass_start(self):
             main_window.App.disable_button(self)
             gen_gpg_pass_win(self)
     else:
-        gen_gpg_pass_win(self)
+        try:
+            command1 = ["pass"]
+            out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL, shell=False)
+
+        except FileNotFoundError:
+            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".')
+            main_window.App.enable_button(self)
+
+        except subprocess.CalledProcessError:
+            gen_gpg_pass_win(self)
+    

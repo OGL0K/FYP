@@ -331,7 +331,7 @@ def sym_enc(passp, decrypt_data, files, copy, threshold, copy_windows, self):
     json_list = []
     for y in range(0, len(files)):
         command2 = ["gpg", "--symmetric", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
-        out2 = subprocess.check_output(command2, input=decrypt_data[y], universal_newlines=False)
+        out2 = subprocess.check_output(command2, input=decrypt_data[y], universal_newlines=False, shell=False)
         encode = base64.b64encode(out2)
         json_file = {f'File{y}':files[y], 'cipher': encode.decode('ascii')+"\n"}
         json_list.append(json_file)
@@ -486,7 +486,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
             try:
                 for x in range(0, len(pass_files)):
                     command1 = ["gpg", "-d", "--quiet", "--yes", "--pinentry-mode=loopback", f"--passphrase={passp}", f'{pass_files[x]}.gpg']
-                    out = subprocess.check_output(command1, universal_newlines=False)
+                    out = subprocess.check_output(command1, universal_newlines=False, shell=False)
                     decrypted_data.append(out)
                 sym_enc_window(decrypted_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self)
 
