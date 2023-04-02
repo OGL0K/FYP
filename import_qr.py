@@ -160,103 +160,104 @@ def scan_qr_start(self):
                 raise ConnectionError
             
         except ConnectionError:
-            messagebox.showerror('Error','Could not find any camera.') 
-
-        scanned_values = []
-        main_window.App.disable_button(self)
-        scanWindow = customtkinter.CTkToplevel(self)
-        scanWindow.title("Recover Passwords")
-        scanWindow.geometry("870x550")
-        scanWindow.resizable(False,False)
-        scanWindow.protocol("WM_DELETE_WINDOW", disable_close)
-
-        frame=np.random.randint(0,255,[100,100,3],dtype='uint8')
-
-        scanlabel = tk.Label(scanWindow)
-        scanlabel.place(x=0, y=0)
-
-        sidebar_frame1 = customtkinter.CTkFrame(scanWindow, width=230, height=700, corner_radius=0)
-        sidebar_frame1.place(x=640, y=0)
-
-        scanned_packets_label = customtkinter.CTkLabel(sidebar_frame1, text= "Scanned QR Code List", font=customtkinter.CTkFont(size=14, weight="bold"))
-        scanned_packets_label.place(x=35, y=5)
-
-        scanned_packets_listbox = tk.Listbox(sidebar_frame1, selectmode=tk.BROWSE, height=20, width=22)
-        scanned_packets_listbox.place(x=15, y=40)
-
-        status_frame = customtkinter.CTkFrame(scanWindow, width=620, height=55, corner_radius=15)
-        status_frame.place(x=10, y=490)
-
-        status_label = customtkinter.CTkLabel(status_frame, text="Please scan your QR code on the camera above.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
-        status_label.place(x=20, y=13)
-
-        delete_QR_button = customtkinter.CTkButton(sidebar_frame1, text='Delete QR Code' ,command=lambda: delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values),  fg_color="darkred", hover_color="#D2042D")
-        delete_QR_button.place(x=48, y=400)
-
-        continue_button = customtkinter.CTkButton(sidebar_frame1, text='Import', command=lambda: evaluate_packets(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
-
-        scan_exit = customtkinter.CTkButton(sidebar_frame1, text='Exit Scan', command=lambda: exit_scan(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
-        scan_exit.place(x=48, y=500)
+            messagebox.showerror('Error','Could not find any camera.')
         
-        while True:
-            try: 
-                ret, frame = cam.read()
-                s = pyzbar.decode(frame)
-                
-                for x in s:
-                    pts = np.array([x.polygon], np.int32)
-                    pts = pts.reshape(-1,1,2)
-                    cv2.polylines(frame, [pts], True, (255,0,255), 5)
+        else: 
+            scanned_values = []
+            main_window.App.disable_button(self)
+            scanWindow = customtkinter.CTkToplevel(self)
+            scanWindow.title("Recover Passwords")
+            scanWindow.geometry("870x550")
+            scanWindow.resizable(False,False)
+            scanWindow.protocol("WM_DELETE_WINDOW", disable_close)
 
-                frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-                img_update = ImageTk.PhotoImage(Image.fromarray(frame))
-                scanlabel.configure(image=img_update)
-                scanlabel.image=img_update
-                scanlabel.update()
+            frame=np.random.randint(0,255,[100,100,3],dtype='uint8')
 
-                if s[0].data.decode('ascii') not in scanned_values:
-                    array = []
-                    convert_package = json.loads(s[0].data.decode('ascii'))
-                    scanned_packets_listbox.insert(0, convert_package['QR-Name'])
+            scanlabel = tk.Label(scanWindow)
+            scanlabel.place(x=0, y=0)
+
+            sidebar_frame1 = customtkinter.CTkFrame(scanWindow, width=230, height=700, corner_radius=0)
+            sidebar_frame1.place(x=640, y=0)
+
+            scanned_packets_label = customtkinter.CTkLabel(sidebar_frame1, text= "Scanned QR Code List", font=customtkinter.CTkFont(size=14, weight="bold"))
+            scanned_packets_label.place(x=35, y=5)
+
+            scanned_packets_listbox = tk.Listbox(sidebar_frame1, selectmode=tk.BROWSE, height=20, width=22)
+            scanned_packets_listbox.place(x=15, y=40)
+
+            status_frame = customtkinter.CTkFrame(scanWindow, width=620, height=55, corner_radius=15)
+            status_frame.place(x=10, y=490)
+
+            status_label = customtkinter.CTkLabel(status_frame, text="Please scan your QR code on the camera above.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
+            status_label.place(x=20, y=13)
+
+            delete_QR_button = customtkinter.CTkButton(sidebar_frame1, text='Delete QR Code' ,command=lambda: delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values),  fg_color="darkred", hover_color="#D2042D")
+            delete_QR_button.place(x=48, y=400)
+
+            continue_button = customtkinter.CTkButton(sidebar_frame1, text='Import', command=lambda: evaluate_packets(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
+
+            scan_exit = customtkinter.CTkButton(sidebar_frame1, text='Exit Scan', command=lambda: exit_scan(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
+            scan_exit.place(x=48, y=500)
+            
+            while True:
+                try: 
+                    ret, frame = cam.read()
+                    s = pyzbar.decode(frame)
                     
-                    if scanned_packets_listbox.size() <= 1:
-                        pass
+                    for x in s:
+                        pts = np.array([x.polygon], np.int32)
+                        pts = pts.reshape(-1,1,2)
+                        cv2.polylines(frame, [pts], True, (255,0,255), 5)
 
-                    else:
-                        for i in range(0, scanned_packets_listbox.size()):
-                            op = scanned_packets_listbox.get(i)
-                            array.append(op)
-                        sorted_array = natsorted(array)
-                        scanned_packets_listbox.delete(0, tk.END)
+                    frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+                    img_update = ImageTk.PhotoImage(Image.fromarray(frame))
+                    scanlabel.configure(image=img_update)
+                    scanlabel.image=img_update
+                    scanlabel.update()
 
-                        for y in range(0, len(sorted_array)):
-                            scanned_packets_listbox.insert(y, sorted_array[y])
+                    if s[0].data.decode('ascii') not in scanned_values:
+                        array = []
+                        convert_package = json.loads(s[0].data.decode('ascii'))
+                        scanned_packets_listbox.insert(0, convert_package['QR-Name'])
+                        
+                        if scanned_packets_listbox.size() <= 1:
+                            pass
 
-                    scanned_values.append(s[0].data.decode('ascii'))
-                    status_label.configure(text=f"{convert_package['QR-Name']} has been scanned successfully.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="green")
+                        else:
+                            for i in range(0, scanned_packets_listbox.size()):
+                                op = scanned_packets_listbox.get(i)
+                                array.append(op)
+                            sorted_array = natsorted(array)
+                            scanned_packets_listbox.delete(0, tk.END)
+
+                            for y in range(0, len(sorted_array)):
+                                scanned_packets_listbox.insert(y, sorted_array[y])
+
+                        scanned_values.append(s[0].data.decode('ascii'))
+                        status_label.configure(text=f"{convert_package['QR-Name']} has been scanned successfully.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="green")
+                        status_label.place(x=20, y=13)
+                        continue_button.place(x=48, y=440)
+                        time.sleep(2)
+
+                    elif s[0].data.decode('ascii') in scanned_values:
+                        convert_package = json.loads(s[0].data.decode('ascii'))
+                        status_label.configure(text=f"Error: {convert_package['QR-Name']} has been already scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
+                        status_label.place(x=20, y=13)
+                        time.sleep(2)
+                
+                except json.decoder.JSONDecodeError:
+                    status_label.configure(text=f"Invalid QR Code has been scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                     status_label.place(x=20, y=13)
-                    continue_button.place(x=48, y=440)
-                    time.sleep(1)
+                    time.sleep(2)
 
-                elif s[0].data.decode('ascii') in scanned_values:
-                    convert_package = json.loads(s[0].data.decode('ascii'))
-                    status_label.configure(text=f"Error: {convert_package['QR-Name']} has been already scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
-                    status_label.place(x=20, y=13)
-                    time.sleep(1)
-            
-            except json.decoder.JSONDecodeError:
-                status_label.configure(text=f"Invalid QR Code has been scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
-                status_label.place(x=20, y=13)
-                time.sleep(1)
+                except tk.TclError:    
+                    pass
 
-            except tk.TclError:    
-                pass
-
-            except IndexError:
-                pass
-            
-            except TypeError:
-                break
+                except IndexError:
+                    pass
+                
+                except TypeError:
+                    break
 
 def complete_shamir(self, shamirWindow, cam, shamir_scan_values):
     try:
@@ -377,7 +378,7 @@ def shamir_scan_start(self):
                     if s[0].data.decode('ascii')[1:20] != '"Packet_Number": 1,':
                         status_label.configure(text='Error: Please only scan the first QR code of the copy.', font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
-                        time.sleep(1)
+                        time.sleep(2)
 
                     elif s[0].data.decode('ascii') not in shamir_scan_values:
                         array = []
@@ -404,18 +405,18 @@ def shamir_scan_start(self):
                         status_label.configure(text=f"{convert_shamir['QR-Name']} has been scanned successfully.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="green")
                         status_label.place(x=20, y=13)
                         continue_button.place(x=48, y=440)
-                        time.sleep(1)
+                        time.sleep(2)
 
                     elif s[0].data.decode('ascii') in shamir_scan_values:
                         convert_shamir = json.loads(s[0].data.decode('ascii'))
                         status_label.configure(text=f"Error: {convert_shamir['QR-Name']} has been already scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
-                        time.sleep(1)
+                        time.sleep(2)
                 
                 except KeyError:
                     status_label.configure(text=f"Error: Passphrase value does not include in this QR Code.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                     status_label.place(x=20, y=13)
-                    time.sleep(1)
+                    time.sleep(2)
 
                 except IndexError:
                     pass

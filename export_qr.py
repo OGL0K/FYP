@@ -467,27 +467,48 @@ def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, la
     enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, files, self, exit_button, label5, label6))
 
 def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self):
-    if passp:
-        decrypted_data = []
-        try:
-            for x in range(0, len(pass_files)):
-                command1 = ["gpg", "-d", "--quiet", "--yes", "--pinentry-mode=loopback", f"--passphrase={passp}", f'{pass_files[x]}.gpg']
-                out = subprocess.check_output(command1, universal_newlines=False)
-                decrypted_data.append(out)
-            sym_enc_window(decrypted_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self)
+    try:
+        check_files = []
+        for path, subdirs, files2 in os.walk(f"{pwd}/.password-store"):
+            for name in files2:
+                if name.endswith('.gpg'):
+                    check_file = os.path.join(path, name)
+                    check_file2 = check_file.replace(".gpg", "")
+                    check_files.append(check_file2)
 
-        except subprocess.CalledProcessError:
-            global error_count
-            global re_passp_error_count
-            error_count -= 1
-            if error_count <= 0:
-                newWindow.destroy()
-                messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.')
-                error_count = 3
-                re_passp_error_count = 3
-                main_window.App.enable_button(self)
-            else:
-                messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)', parent=newWindow)
+        if pass_files == check_files:
+            pass
+        else:
+            raise FileNotFoundError
+        
+        if passp:
+            decrypted_data = []
+            try:
+                for x in range(0, len(pass_files)):
+                    command1 = ["gpg", "-d", "--quiet", "--yes", "--pinentry-mode=loopback", f"--passphrase={passp}", f'{pass_files[x]}.gpg']
+                    out = subprocess.check_output(command1, universal_newlines=False)
+                    decrypted_data.append(out)
+                sym_enc_window(decrypted_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self)
+
+            except subprocess.CalledProcessError:
+                global error_count
+                global re_passp_error_count
+                error_count -= 1
+                if error_count <= 0:
+                    newWindow.destroy()
+                    messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.')
+                    error_count = 3
+                    re_passp_error_count = 3
+                    main_window.App.enable_button(self)
+                else:
+                    messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)', parent=newWindow)
+
+    except FileNotFoundError:
+        newWindow.destroy()
+        messagebox.showerror("Error", "An error occurred while decrypting your files. Please check your pass storage and refresh the pass list.")
+        error_count = 3
+        re_passp_error_count = 3
+        main_window.App.enable_button(self)
 
 def asym_dec_window(self, pass_files, files):
     newWindow = customtkinter.CTkToplevel(self)

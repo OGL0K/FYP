@@ -57,7 +57,7 @@ class App(customtkinter.CTk):
 
         self.label2 = customtkinter.CTkLabel(self, text="Pass Files List", font=customtkinter.CTkFont(size=13, weight="bold"))
 
-        self.home_label1 = customtkinter.CTkLabel(self, text="PassQR has been developed to backup and recover\n passwords securely and easlily that is located on pass.")
+        self.home_label1 = customtkinter.CTkLabel(self, text="PassQR has been developed to backup and recover\npasswords securely and easlily that is located on pass.")
         self.home_label1.place(x=200, y=60)
 
         self.home_label2 = customtkinter.CTkLabel(self, text="Backup", font=customtkinter.CTkFont(size=13, weight="bold"))
@@ -69,7 +69,7 @@ class App(customtkinter.CTk):
         self.home_label4 = customtkinter.CTkLabel(self, text="Recover", font=customtkinter.CTkFont(size=13, weight="bold"))
         self.home_label4.place(x=340, y=220)
 
-        self.home_label5 = customtkinter.CTkLabel(self, text="To recover your passwords, firstly you scan your QR\n codes. After a successful scan, you have to provide\n your passphrase that you have generated in backup\n process. Once that is done, you are good to go! If\n you forget your passphrase and you have more than\n one copy, do not worry. You can use retreive your\n passphrase by scanning your first QR code of your copies.\n Also, you can generate a new GPG key and pass storage.")
+        self.home_label5 = customtkinter.CTkLabel(self, text="To recover your passwords, firstly scan your QR\n codes. After a successful scan, you have to provide\n your passphrase that you have generated in backup\n process. Once that is done, you are good to go! If\n you forget your passphrase and you have more than\n one copy, do not worry. You can use retreive your\n passphrase by scanning your first QR code of your copies.\n Also, you can generate a new GPG key and pass storage.")
         self.home_label5.place(x=190, y=245)
 
         #Pass Files Listbox
