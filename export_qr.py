@@ -1,11 +1,13 @@
 import os
+import io
+import segno
 import sys
 import json
 import shutil
-import qrcode
 import base64
 import shamirs
 import subprocess
+import numpy as np
 import customtkinter
 import tkinter as tk
 
@@ -165,7 +167,7 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
     global replay
     dump = json.dumps(json_list)
 
-    if sys.getsizeof(dump) < 2000:
+    if sys.getsizeof(dump) < 1400:
 
         if os.path.exists(final_qr_path):
             shutil.rmtree(final_qr_path)
@@ -176,11 +178,12 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
         if int(copy) == 1:
             json1 = {'Packet_Number': '1', 'QR-Name': 'QR-Code1', 'Data': dump}
             dumped = json.dumps(json1)
-            qr = qrcode.QRCode(version=1, box_size=10, border=7)
-            qr.add_data(dumped)
-            qr.make(fit=True)
-            img = qr.make_image()
-            font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", 65)
+
+            out = io.BytesIO()
+            segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
+            out.seek(0)
+            img = Image.open(out)
+            font = ImageFont.truetype("Arial.ttf", 65)
             draw = ImageDraw.Draw(img)
             draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
 
@@ -199,30 +202,33 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
                 if x == 0:
                     json1 = {'Packet_Number': '1', 'QR-Name': 'QR-Code1', 'Data': dump, 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
                     dumped = json.dumps(json1)
-                    qr = qrcode.QRCode(version=1, box_size=10, border=7)
-                    qr.add_data(dumped)
-                    qr.make(fit=True)
-                    img = qr.make_image()
-                    font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", 65)
+
+                    out = io.BytesIO()
+                    segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
+                    out.seek(0)
+                    img = Image.open(out)
+                    font = ImageFont.truetype("Arial.ttf", 65)
                     draw = ImageDraw.Draw(img)
                     draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
+
                     img.save(f'{final_qr_path}/QR-File1.png')
 
                 else:
                     json1 = {'Packet_Number': '1', 'QR-Name': f'QR-Code1-Copy{x}', 'Data': dump, 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
                     dumped = json.dumps(json1)
-                    qr = qrcode.QRCode(version=1, box_size=10, border=7)
-                    qr.add_data(dumped)
-                    qr.make(fit=True)
-                    img = qr.make_image()
-                    font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", 65)
+
+                    out = io.BytesIO()
+                    segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
+                    out.seek(0)
+                    img = Image.open(out)
+                    font = ImageFont.truetype("Arial.ttf", 65)
                     draw = ImageDraw.Draw(img)
+
                     draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
                     img.save(f'{final_qr_path}/QR-File1-Copy{x}.png')
 
             main_window.App.enable_button(self)
             messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR codes has been stored in "Documents/PassQR".')
-
     else:
         if os.path.exists(final_qr_path):
             shutil.rmtree(final_qr_path)
@@ -238,18 +244,17 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
 
         if int(copy) == 1:
             packet2 = []
-            for i in range(0, len(dump), 750):
-                packet2.append(dump[i:i+750])
+            for i in range(0, len(dump), 1000):
+                packet2.append(dump[i:i+1000])
             for index in range(0, len(packet2)):
                 json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index]}
 
                 dumped = json.dumps(json1)
 
-                qr = qrcode.QRCode(version=1, box_size=10, border=7)
-                qr.add_data(dumped)
-                qr.make(fit=True)
-                img = qr.make_image()
-                
+                out = io.BytesIO()
+                segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
+                out.seek(0)
+                img = Image.open(out)
                 font = ImageFont.truetype("Arial.ttf", 65)
                 draw = ImageDraw.Draw(img)
                 draw.text((55,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
@@ -272,8 +277,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             for x in range(0, int(copy)):
                 packet2 = []
                 if x == 0:
-                    for i in range(0, len(dump), 750):
-                        packet2.append(dump[i:i+750])
+                    for i in range(0, len(dump), 1000):
+                        packet2.append(dump[i:i+1000])
                     for index in range(0, len(packet2)):
                         if index == 0:
                             json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
@@ -282,10 +287,10 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
 
                         dumped = json.dumps(json1)
 
-                        qr = qrcode.QRCode(version=1, box_size=10, border=7)
-                        qr.add_data(dumped)
-                        qr.make(fit=True)
-                        img = qr.make_image()
+                        out = io.BytesIO()
+                        segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
+                        out.seek(0)
+                        img = Image.open(out)
                         font = ImageFont.truetype("Arial.ttf", 65)
                         draw = ImageDraw.Draw(img)
                         draw.text((0,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
@@ -297,8 +302,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
                     replay +=1
 
                 else:
-                    for i in range(0, len(dump), 750):
-                        packet2.append(dump[i:i+750])
+                    for i in range(0, len(dump), 1000):
+                        packet2.append(dump[i:i+1000])
                     for index in range(0, len(packet2)):
                         if index == 0:
                             json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}-Copy{x}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
@@ -307,10 +312,10 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
 
                         dumped = json.dumps(json1)
 
-                        qr = qrcode.QRCode(version=1, box_size=10, border=7)
-                        qr.add_data(dumped)
-                        qr.make(fit=True)
-                        img = qr.make_image()
+                        out = io.BytesIO()
+                        segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
+                        out.seek(0)
+                        img = Image.open(out)
                         font = ImageFont.truetype("Arial.ttf", 65)
                         draw = ImageDraw.Draw(img)
                         draw.text((0,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
@@ -476,7 +481,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                     check_file2 = check_file.replace(".gpg", "")
                     check_files.append(check_file2)
 
-        if pass_files == check_files:
+        if np.any(np.in1d(pass_files, check_files)):
             pass
         else:
             raise FileNotFoundError
