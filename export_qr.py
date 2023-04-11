@@ -464,7 +464,7 @@ def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, la
     label3.configure(text= "Please create a new passphrase for encryption.")
     label4.place(x=50,y=120)
 
-    label5 = customtkinter.CTkLabel(newWindow, text ="The passphrase you have entered should be at least 8 characters")
+    label5 = customtkinter.CTkLabel(newWindow, text ="The passphrase you have entered should be between 8 - 30 characters")
     label5.place(x=50,y=60)
 
     label6 = customtkinter.CTkLabel(newWindow, text ="long and contain at least 1 digit or special character.")
