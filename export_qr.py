@@ -7,7 +7,6 @@ import shutil
 import base64
 import shamirs
 import subprocess
-import numpy as np
 import customtkinter
 import tkinter as tk
 
@@ -167,7 +166,7 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
     global replay
     dump = json.dumps(json_list)
 
-    if sys.getsizeof(dump) < 1400:
+    if sys.getsizeof(dump) < 1200:
 
         if os.path.exists(final_qr_path):
             shutil.rmtree(final_qr_path)
@@ -244,8 +243,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
 
         if int(copy) == 1:
             packet2 = []
-            for i in range(0, len(dump), 1000):
-                packet2.append(dump[i:i+1000])
+            for i in range(0, len(dump), 800):
+                packet2.append(dump[i:i+800])
             for index in range(0, len(packet2)):
                 json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index]}
 
@@ -277,8 +276,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             for x in range(0, int(copy)):
                 packet2 = []
                 if x == 0:
-                    for i in range(0, len(dump), 1000):
-                        packet2.append(dump[i:i+1000])
+                    for i in range(0, len(dump), 800):
+                        packet2.append(dump[i:i+800])
                     for index in range(0, len(packet2)):
                         if index == 0:
                             json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
@@ -302,8 +301,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
                     replay +=1
 
                 else:
-                    for i in range(0, len(dump), 1000):
-                        packet2.append(dump[i:i+1000])
+                    for i in range(0, len(dump), 800):
+                        packet2.append(dump[i:i+800])
                     for index in range(0, len(packet2)):
                         if index == 0:
                             json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}-Copy{x}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
@@ -335,7 +334,7 @@ def sym_enc(passp, decrypt_data, files, copy, threshold, copy_windows, self):
     copy_windows.destroy()
     json_list = []
     for y in range(0, len(files)):
-        command2 = ["gpg", "--symmetric", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
+        command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
         out2 = subprocess.check_output(command2, input=decrypt_data[y], universal_newlines=False, shell=False)
         encode = base64.b64encode(out2)
         json_file = {f'File{y}':files[y], 'cipher': encode.decode('ascii')+"\n"}
@@ -343,7 +342,7 @@ def sym_enc(passp, decrypt_data, files, copy, threshold, copy_windows, self):
     
     qr_convert(json_list, copy, passp, threshold, self)
 
-def get_copy_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button):
+def get_threshold_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3):
     copy_number = spin_box.get()
     
     if copy_number == "1":
@@ -352,16 +351,25 @@ def get_copy_number(re_passp, decrypt_data, files, copy_windows, label2, label3,
         sym_enc(re_passp, decrypt_data, files, copy_number, threshold_number, copy_windows, self)
 
     else:
+        copy_label.destroy()
+        copy_label2.destroy()
+        copy_label3.destroy()
         copy_windows.geometry("700x170")
+        
         label2.configure(text="Minimum Threshold")
+
         label3.configure(text="As you have more than one copy, you can retreive your passphrase you have created for")
         label3.place(x=50, y=35)
+
         label3_ct1 = customtkinter.CTkLabel(copy_windows, text="symmetric encryption by combining the first QR code of each copies.")
         label3_ct1.place(x=50, y=55)
+
         label3_ct2 = customtkinter.CTkLabel(copy_windows, text="Please select a minimum threshold. (Min:2)")
         label3_ct2.place(x=50, y=95)
+
         label3_ct3 = customtkinter.CTkLabel(copy_windows, text="Minimum threshold is a minimum number of QR codes that is needed to retreive your passphrase.")
         label3_ct3.place(x=50, y=75)
+
         label4.configure(text="Treshold:")
         label4.place(x=50, y=125)
 
@@ -373,19 +381,35 @@ def get_copy_number(re_passp, decrypt_data, files, copy_windows, label2, label3,
         exit_button.place(x=275,y=125)
         enterbutton.configure(command=lambda: sym_enc(re_passp, decrypt_data, files, copy_number, spin_box.get(), copy_windows, self))
 
-def set_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
-    sym_passphrase_windows.geometry("500x150")
-    sym_passphrase_windows.title("Number of Copies")
+def set_copy_number(re_passp, decrypt_data, files, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
+    copy_windows.geometry("600x190")
+    copy_windows.title("Number of Copies")
     re_passp_entry.destroy()
     label2.configure(text="Number of Copies")
+
+    copy_label = customtkinter.CTkLabel(copy_windows, text="These copies help you to retrieve your passphrase.")
+    copy_label.place(x=50,y=35)
+
+    copy_label2 = customtkinter.CTkLabel(copy_windows, text="However, if someone gains access to your copies, it can find out your passphrase.")
+    copy_label2.place(x=50,y=60)
+
+    copy_label3 = customtkinter.CTkLabel(copy_windows, text="For your safety, it is recommended to generate only 1 copy.")
+    copy_label3.place(x=50,y=85)
+
     label3.configure(text="How many copies would you like to have? (Min:1, Max:10)")
+    label3.place(x=50,y=110)
+
     label4.configure(text="Copy number:")
+    label4.place(x=50,y=140)
 
     current_value = tk.StringVar(value=1)
-    spin_box = tk.Spinbox(sym_passphrase_windows, from_=1, to=10, textvariable=current_value, width=3, state = 'readonly', wrap=True, bg="black")
-    spin_box.place(x=150,y=65)
+    spin_box = tk.Spinbox(copy_windows, from_=1, to=10, textvariable=current_value, width=3, state = 'readonly', wrap=True, bg="black")
+    spin_box.place(x=150,y=140)
 
-    enterbutton.configure(command=lambda: get_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button))
+    enterbutton.configure(command=lambda: get_threshold_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3))
+    enterbutton.place(x=210,y=140)
+
+    exit_button.place(x=285,y=140)
 
 def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button):
     re_passp = re_passp_entry.get()
@@ -410,22 +434,8 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
     alphabet = "abcdefghijklmnopqrstuvwxyz"  
     numbers = "0123456789"
     sym_passp = sym_passp_entry.get()
-
-    if any(c in special_characters or c in numbers for c in sym_passp) and any(c in alphabet.upper() or c in alphabet for c in sym_passp) and len(sym_passp) >=8:
-        sym_passphrase_windows.geometry("500x150")
-        sym_passp_entry.destroy()
-        label3.configure(text="Please re-enter your new passphrase")
-        label4.place(x=50,y=65)
-        label5.destroy()
-        label6.destroy()
-        re_passp_entry = customtkinter.CTkEntry(sym_passphrase_windows, validate="key", validatecommand=vcmd, show="*")
-        re_passp_entry.place(x=130,y=65)
-        enterbutton.place(x=50,y=100)
-        exit_button.place(x=125,y=100)
-        enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button))
-
-    else:
-        if messagebox.askyesno('Weak Passphrase', 'Your passphrase is not considered strong. Do you wish to use this one?', parent=sym_passphrase_windows):
+    if sym_passp:
+        if any(c in special_characters or c in numbers for c in sym_passp) and any(c in alphabet.upper() or c in alphabet for c in sym_passp) and len(sym_passp) >=8:
             sym_passphrase_windows.geometry("500x150")
             sym_passp_entry.destroy()
             label3.configure(text="Please re-enter your new passphrase")
@@ -438,6 +448,11 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
             exit_button.place(x=125,y=100)
             enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button))
 
+        else:
+            messagebox.showinfo('Weak Passphrase', 'Passphrase you have entered does not meet the requirements.', parent=sym_passphrase_windows)
+    else:
+        messagebox.showinfo('Empty Passphrase', 'Passphrase cannot be empty.', parent=sym_passphrase_windows)
+
 def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     newWindow.title("Passphrase for Symmetric Encryption")
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
@@ -449,12 +464,11 @@ def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, la
     label3.configure(text= "Please create a new passphrase for encryption.")
     label4.place(x=50,y=120)
 
-    label5 = customtkinter.CTkLabel(newWindow, text ="To create a secure passphrase, it should be at least 8 characters")
-    label5.place(x=50,y=65)
+    label5 = customtkinter.CTkLabel(newWindow, text ="The passphrase you have entered should be at least 8 characters")
+    label5.place(x=50,y=60)
 
     label6 = customtkinter.CTkLabel(newWindow, text ="long and contain at least 1 digit or special character.")
     label6.place(x=50,y=85)
-    
 
     def validate(P):
         if len(P) > 30:
@@ -480,8 +494,9 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                     check_file = os.path.join(path, name)
                     check_file2 = check_file.replace(".gpg", "")
                     check_files.append(check_file2)
-
-        if np.any(np.in1d(pass_files, check_files)):
+        print(check_files)
+        print(pass_files)
+        if (all(x in check_files for x in pass_files)):
             pass
         else:
             raise FileNotFoundError
@@ -507,7 +522,8 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                     main_window.App.enable_button(self)
                 else:
                     messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)', parent=newWindow)
-
+        else:
+            messagebox.showinfo('No Passphrase', 'Please enter your passphrase.', parent=newWindow)
     except FileNotFoundError:
         newWindow.destroy()
         messagebox.showerror("Error", "An error occurred while decrypting your files. Please check your pass storage and refresh the pass list.")
