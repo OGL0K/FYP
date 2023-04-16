@@ -36,15 +36,15 @@ class App(customtkinter.CTk):
         self.logo_label.place(x=45, y=30)
 
         #Home Tab
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Home", command=self.home_window, fg_color="darkred", hover_color="#D2042D")
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Home", command=self.home_page, fg_color="darkred", hover_color="#D2042D")
         self.sidebar_button_1.place(x=15, y=80)
 
         #Convert Tab
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Backup", command=self.convert_window, fg_color="darkred", hover_color="#D2042D")
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Backup", command=self.backup_page, fg_color="darkred", hover_color="#D2042D")
         self.sidebar_button_2.place(x=15, y=130)
 
         #Import Tab
-        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, text="Recover", command=self.import_window,  fg_color="darkred", hover_color="#D2042D")
+        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, text="Recover", command=self.recover_page,  fg_color="darkred", hover_color="#D2042D")
         self.sidebar_button_3.place(x=15, y=180)
 
         #Exit Button
@@ -53,18 +53,18 @@ class App(customtkinter.CTk):
 
         #Default Home Label
         self.label1 = customtkinter.CTkLabel(self, text="Home", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.label1.place(x=340, y=30)
+        self.label1.place(x=337, y=30)
 
         self.label2 = customtkinter.CTkLabel(self, text="Pass Files List", font=customtkinter.CTkFont(size=13, weight="bold"))
 
         self.home_label1 = customtkinter.CTkLabel(self, text="PassQR has been developed to backup and recover\npasswords securely and easlily that is located on pass.")
-        self.home_label1.place(x=200, y=60)
+        self.home_label1.place(x=210, y=60)
 
         self.home_label2 = customtkinter.CTkLabel(self, text="Backup", font=customtkinter.CTkFont(size=13, weight="bold"))
         self.home_label2.place(x=340, y=95)
 
         self.home_label3 = customtkinter.CTkLabel(self, text="Backing up your passwords is really simple. You can\n backup your passwords however you like. It can be\n backed up all together or you can backup passwords\n by choosing from the list. If you made any changes in\n your pass repository, you can hit refresh button to\n refresh your pass list.")
-        self.home_label3.place(x=200, y=120)
+        self.home_label3.place(x=210, y=120)
 
         self.home_label4 = customtkinter.CTkLabel(self, text="Recover", font=customtkinter.CTkFont(size=13, weight="bold"))
         self.home_label4.place(x=340, y=220)
@@ -82,9 +82,6 @@ class App(customtkinter.CTk):
                     self.joined_2 = self.joined.replace(f"{pwd}/.password-store/", "")
                     self.final_joined2 = self.joined_2.replace(".gpg", "")
                     self.subdir_file_arr.append(self.final_joined2)
-
-        else:  
-            pass
 
         for x in range(0, len(self.subdir_file_arr)):
             self.passfiles_lb.insert(x, self.subdir_file_arr[x])
@@ -115,11 +112,11 @@ class App(customtkinter.CTk):
             self.op = self.passfiles_lb.get(i)
             self.files.append(self.op)
         if self.files == []:
-            messagebox.showinfo('Not Selected', 'Please choose a file')
+            messagebox.showinfo('File(s) Not Selected', 'Please choose a file', parent=self)
         else:
             self.pass_files = []
             
-            if messagebox.askyesno('Convert', f'Are you sure to convert the selected file(s)?'):
+            if messagebox.askyesno('Convert', f'Are you sure to convert the selected file(s)?', parent=self):
                 
                 kill_command = ["gpgconf", "--kill", "gpg-agent"]
                 kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
@@ -138,12 +135,12 @@ class App(customtkinter.CTk):
                 self.files.append(self.op)
 
             if self.files == []:
-                messagebox.showinfo('Empty Store', 'Your pass store is empty.')
+                messagebox.showinfo('Empty Store', 'Your pass store is empty.', parent=self)
 
             else:
                 self.pass_files = []
                 
-                if messagebox.askyesno('Convert', f'Are you sure to convert all files?'):
+                if messagebox.askyesno('Convert', f'Are you sure to convert all files?', parent=self):
                     
                     kill_command = ["gpgconf", "--kill", "gpg-agent"]
                     kill_out = subprocess.check_output(kill_command, universal_newlines=False)
@@ -154,7 +151,7 @@ class App(customtkinter.CTk):
                     
                     export_qr.asym_dec_window(self, self.pass_files , self.files)
         else:
-            messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.')
+            messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.', parent=self)
 
     def refresh(self):
         if os.path.exists(f"{pwd}/.password-store"):
@@ -172,16 +169,17 @@ class App(customtkinter.CTk):
             for y in range(0, len(self.subdir_file_arr)):
                 self.passfiles_lb.insert(y, self.subdir_file_arr[y])
             
-            messagebox.showinfo('Refreshed', 'Your pass files list has been refreshed.')
+            messagebox.showinfo('Refreshed', 'Your pass files list has been refreshed.', parent=self)
         else:
-            messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.')
+            messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.', parent=self)
 
-    def home_window(self):
+    #Home Tab Function
+    def home_page(self):
         self.label1.configure(text="Home")
 
-        self.home_label1.place(x=200, y=60)
+        self.home_label1.place(x=210, y=60)
         self.home_label2.place(x=340, y=95)
-        self.home_label3.place(x=200, y=120)
+        self.home_label3.place(x=210, y=120)
         self.home_label4.place(x=340, y=220)
         self.home_label5.place(x=190, y=245)
 
@@ -194,7 +192,8 @@ class App(customtkinter.CTk):
         self.shamir_button.place_forget()
         self.gen_gpg_pass_button.place_forget()
 
-    def convert_window(self):
+    #Backup Tab Function
+    def backup_page(self):
         self.label1.configure(text="Backup")
         
         self.home_label1.place_forget()
@@ -212,7 +211,7 @@ class App(customtkinter.CTk):
         self.convertall.place(x=285, y=290)
         self.refresh_files.place(x=285, y=330)
 
-    def import_window(self):
+    def recover_page(self):
         self.label1.configure(text="Recover")
 
         self.scan_button.place(x=270, y=140)
@@ -256,7 +255,7 @@ class App(customtkinter.CTk):
         pass
 
     def quit_app(self):
-        quit_question = messagebox.askquestion('Exit App', 'Are you sure exitting the applicaiton?').upper()
+        quit_question = messagebox.askquestion('Exit App', 'Are you sure exitting the applicaiton?', parent=self).upper()
         if quit_question[0] == 'Y':
             self.quit()
         else:

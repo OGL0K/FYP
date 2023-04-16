@@ -243,8 +243,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
 
         if int(copy) == 1:
             packet2 = []
-            for i in range(0, len(dump), 800):
-                packet2.append(dump[i:i+800])
+            for i in range(0, len(dump), 650):
+                packet2.append(dump[i:i+650])
             for index in range(0, len(packet2)):
                 json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index]}
 
@@ -276,8 +276,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             for x in range(0, int(copy)):
                 packet2 = []
                 if x == 0:
-                    for i in range(0, len(dump), 800):
-                        packet2.append(dump[i:i+800])
+                    for i in range(0, len(dump), 650):
+                        packet2.append(dump[i:i+650])
                     for index in range(0, len(packet2)):
                         if index == 0:
                             json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
@@ -301,8 +301,8 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
                     replay +=1
 
                 else:
-                    for i in range(0, len(dump), 800):
-                        packet2.append(dump[i:i+800])
+                    for i in range(0, len(dump), 650):
+                        packet2.append(dump[i:i+650])
                     for index in range(0, len(packet2)):
                         if index == 0:
                             json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}-Copy{x}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
@@ -494,8 +494,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                     check_file = os.path.join(path, name)
                     check_file2 = check_file.replace(".gpg", "")
                     check_files.append(check_file2)
-        print(check_files)
-        print(pass_files)
+                    
         if (all(x in check_files for x in pass_files)):
             pass
         else:
