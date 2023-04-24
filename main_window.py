@@ -7,6 +7,7 @@ import export_qr
 import import_qr
 from tkinter import messagebox
 
+gpg_id_count = 0
 pwd = os.path.expanduser('~')
 customtkinter.set_appearance_mode("System")
 
@@ -55,7 +56,7 @@ class App(customtkinter.CTk):
         self.label1 = customtkinter.CTkLabel(self, text="Home", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.label1.place(x=337, y=30)
 
-        self.label2 = customtkinter.CTkLabel(self, text="Pass Files List", font=customtkinter.CTkFont(size=13, weight="bold"))
+        self.label2 = customtkinter.CTkLabel(self, text="Password List", font=customtkinter.CTkFont(size=13, weight="bold"))
 
         self.home_label1 = customtkinter.CTkLabel(self, text="PassQR has been developed to backup and recover\npasswords securely and easlily that is located on pass.")
         self.home_label1.place(x=210, y=60)
@@ -72,7 +73,7 @@ class App(customtkinter.CTk):
         self.home_label5 = customtkinter.CTkLabel(self, text="To recover your passwords, firstly scan your QR\n codes. After a successful scan, you have to provide\n your passphrase that you have generated in backup\n process. Once that is done, you are good to go! If\n you forget your passphrase and you have more than\n one copy, do not worry. You can use retreive your\n passphrase by scanning your first QR code of your copies.\n Also, you can generate a new GPG key and pass storage.")
         self.home_label5.place(x=190, y=245)
 
-        #Pass Files Listbox
+        #Password Listbox
         self.passfiles_lb = tk.Listbox(self, selectmode=tk.MULTIPLE, height=9)
         self.subdir_file_arr = []
         for path, subdirs, files in os.walk(f"{pwd}/.password-store"):
@@ -129,27 +130,40 @@ class App(customtkinter.CTk):
 
     def convertAllFiles(self):
         if os.path.exists(f"{pwd}/.password-store"):
-            self.files = []
-            for i in range(0, self.passfiles_lb.size()):
-                self.op = self.passfiles_lb.get(i)
-                self.files.append(self.op)
-
-            if self.files == []:
-                messagebox.showinfo('Empty Store', 'Your pass store is empty.', parent=self)
-
+            global gpg_id_count
+            check_files = []
+            for path, subdirs, files2 in os.walk(f"{pwd}/.password-store"):
+                for name in files2:
+                    if name.endswith('.gpg-id'):
+                        gpg_id_count +=1
+            
+            if gpg_id_count >= 2:
+                messagebox.showinfo('Multiple GPG IDs', 'One or more subfolders have different GPG IDs. Therefore, passwords cannot be backed up all together. You can still backup your subfolders that have different GPG IDs individually by selecting the files that are inside that subfolder. If you select other files that is encrypted with different GPG ID, you cannot backup your passwords.', parent=self)
+                gpg_id_count = 0
             else:
-                self.pass_files = []
-                
-                if messagebox.askyesno('Convert', f'Are you sure to convert all files?', parent=self):
-                    
-                    kill_command = ["gpgconf", "--kill", "gpg-agent"]
-                    kill_out = subprocess.check_output(kill_command, universal_newlines=False)
-                    self.disable_button()
 
-                    for val in self.files:
-                        self.pass_files.append(f'{pwd}/.password-store/{val}')
+                self.files = []
+                for i in range(0, self.passfiles_lb.size()):
+                    self.op = self.passfiles_lb.get(i)
+                    self.files.append(self.op)
+
+                if self.files == []:
+                    messagebox.showinfo('Empty Store', 'Your pass store is empty.', parent=self)
+
+                else:
+                    self.pass_files = []
                     
-                    export_qr.asym_dec_window(self, self.pass_files , self.files)
+                    if messagebox.askyesno('Convert', f'Are you sure to convert all files?', parent=self):
+                        
+                        kill_command = ["gpgconf", "--kill", "gpg-agent"]
+                        kill_out = subprocess.check_output(kill_command, universal_newlines=False)
+                        self.disable_button()
+
+                        for val in self.files:
+                            self.pass_files.append(f'{pwd}/.password-store/{val}')
+                        
+                        export_qr.asym_dec_window(self, self.pass_files , self.files)
+                        gpg_id_count = 0
         else:
             messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.', parent=self)
 
@@ -169,7 +183,7 @@ class App(customtkinter.CTk):
             for y in range(0, len(self.subdir_file_arr)):
                 self.passfiles_lb.insert(y, self.subdir_file_arr[y])
             
-            messagebox.showinfo('Refreshed', 'Your pass files list has been refreshed.', parent=self)
+            messagebox.showinfo('Refreshed', 'Your password list has been refreshed.', parent=self)
         else:
             messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.', parent=self)
 

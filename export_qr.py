@@ -38,19 +38,17 @@ def cancel_convert(self, window):
         window.destroy()
         main_window.App.enable_button(self)
 
-def image_grid(imgs, rows, cols):
+#Setting Grid of the Image File
+def set_grid(image_list, rows, collumns):
+    len(image_list) == rows*collumns
+    image_width, image_height = image_list[0].size
+    image_grid = Image.new('RGB', (collumns*image_width, rows*image_height), (255,255,255))
 
-    len(imgs) == rows*cols
+    for i, image in enumerate(image_list):
+        image_grid.paste(image, box=(i%collumns*image_width, i//collumns*image_height))
+    return image_grid
 
-    w, h = imgs[0].size
-    grid = Image.new('RGB', (cols*w, rows*h), (255,255,255))
-    grid_w, grid_h = grid.size
-    
-    for i, img in enumerate(imgs):
-        grid.paste(img, box=(i%cols*w, i//cols*h))
-    return grid
-
-def combine_img():
+def combine_img(copy):
     global replay
     qr_file_count = 0
 
@@ -59,23 +57,28 @@ def combine_img():
     else:
         os.mkdir(final_qr_path)
 
-    if replay == 0:
-        original_dir = f"{final_qr_path}/Original"
+    if int(copy) == 1:
+        pass
+    
+    else:
 
-        if os.path.exists(original_dir):
-            shutil.rmtree(original_dir)
-            os.mkdir(original_dir)
-        else:
-            os.mkdir(original_dir)
+        if replay == 0:
+            original_dir = f"{final_qr_path}/Original"
 
-    else: 
-        copy_dir = f"{final_qr_path}/Copy-{replay}"
+            if os.path.exists(original_dir):
+                shutil.rmtree(original_dir)
+                os.mkdir(original_dir)
+            else:
+                os.mkdir(original_dir)
 
-        if os.path.exists(copy_dir):
-            shutil.rmtree(copy_dir)
-            os.mkdir(copy_dir)
-        else:
-            os.mkdir(copy_dir)
+        else: 
+            copy_dir = f"{final_qr_path}/Copy-{replay + 1}"
+
+            if os.path.exists(copy_dir):
+                shutil.rmtree(copy_dir)
+                os.mkdir(copy_dir)
+            else:
+                os.mkdir(copy_dir)
 
     while True:
         qr_list = []
@@ -94,52 +97,72 @@ def combine_img():
 
         if len(qr_image_list) == 1:
             qr_file_count += 1
-            grid = image_grid(qr_image_list, 1, 1)
-            if replay == 0:
-                grid.save(f'{original_dir}/QR-File{qr_file_count}.png')
+            image_file = set_grid(qr_image_list, 1, 1)
             
-            elif replay > 0:
-                grid.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay}.png')
+            if int(copy) == 1:
+                image_file.save(f'{final_qr_path}/QR-File{qr_file_count}.png')
+            else:
+                if replay == 0:
+                    image_file.save(f'{original_dir}/QR-File{qr_file_count}.png')
+            
+                elif replay > 0:
+                    image_file.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay + 1}.png')
             return False
 
         elif len(qr_image_list) == 2:
             qr_file_count += 1
-            grid = image_grid(qr_image_list, 1, 2)
-            if replay == 0:
-                grid.save(f'{original_dir}/QR-File{qr_file_count}.png')
+            image_file = set_grid(qr_image_list, 1, 2)
+
+            if int(copy) == 1:
+                image_file.save(f'{final_qr_path}/QR-File{qr_file_count}.png')
+            else:
+                if replay == 0:
+                    image_file.save(f'{original_dir}/QR-File{qr_file_count}.png')
             
-            elif replay > 0:
-                grid.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay}.png')
+                elif replay > 0:
+                    image_file.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay + 1}.png')
             return False
 
         elif len(qr_image_list) == 3 or len(qr_image_list) == 4:
             qr_file_count += 1
-            grid = image_grid(qr_image_list, 2, 2)
-            if replay == 0:
-                grid.save(f'{original_dir}/QR-File{qr_file_count}.png')
+            image_file = set_grid(qr_image_list, 2, 2)
+
+            if int(copy) == 1:
+                image_file.save(f'{final_qr_path}/QR-File{qr_file_count}.png')
+            else:
+                if replay == 0:
+                    image_file.save(f'{original_dir}/QR-File{qr_file_count}.png')
             
-            elif replay > 0:
-                grid.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay}.png')
+                elif replay > 0:
+                    image_file.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay + 1}.png')
             return False
 
         elif len(qr_image_list) == 5 or len(qr_image_list) == 6:
             qr_file_count += 1
-            grid = image_grid(qr_image_list, 2, 3)
-            if replay == 0:
-                grid.save(f'{original_dir}/QR-File{qr_file_count}.png')
+            image_file = set_grid(qr_image_list, 2, 3)
+
+            if int(copy) == 1:
+                image_file.save(f'{final_qr_path}/QR-File{qr_file_count}.png')
+            else:
+                if replay == 0:
+                    image_file.save(f'{original_dir}/QR-File{qr_file_count}.png')
             
-            elif replay > 0:
-                grid.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay}.png')
+                elif replay > 0:
+                    image_file.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay + 1}.png')
             return False
 
         elif len(qr_image_list) == 7 or len(qr_image_list) == 8 or len(qr_image_list) == 9:
             qr_file_count += 1
-            grid = image_grid(qr_image_list, 3, 3)
-            if replay == 0:
-                grid.save(f'{original_dir}/QR-File{qr_file_count}.png')
+            image_file = set_grid(qr_image_list, 3, 3)
+
+            if int(copy) == 1:
+                image_file.save(f'{final_qr_path}/QR-File{qr_file_count}.png')
+            else:
+                if replay == 0:
+                    image_file.save(f'{original_dir}/QR-File{qr_file_count}.png')
             
-            elif replay > 0:
-                grid.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay}.png')
+                elif replay > 0:
+                    image_file.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay + 1}.png')
             return False
 
         elif len(qr_image_list) >= 9:
@@ -151,22 +174,25 @@ def combine_img():
                 qr_image_list2.append(Image.open(z))
 
             qr_file_count += 1
-            grid = image_grid(qr_image_list2, 3, 3)
+            image_file = set_grid(qr_image_list2, 3, 3)
 
-            if replay == 0:
-                grid.save(f'{original_dir}/QR-File{qr_file_count}.png')
+            if int(copy) == 1:
+                image_file.save(f'{final_qr_path}/QR-File{qr_file_count}.png')
+            else:
+                if replay == 0:
+                    image_file.save(f'{original_dir}/QR-File{qr_file_count}.png')
             
-            elif replay > 0:
-                grid.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay}.png')
+                elif replay > 0:
+                    image_file.save(f'{copy_dir}/QR-File{qr_file_count}-Copy{replay + 1}.png')
 
             for b in natsorted(qr_list2):
                 os.remove(b)
             
-def qr_convert(json_list, copy, passp, threshold_number, self):
+def qr_convert(password_list, copy, passp, threshold_number, self):
     global replay
-    dump = json.dumps(json_list)
+    pass_data = json.dumps(password_list)
 
-    if sys.getsizeof(dump) < 1200:
+    if sys.getsizeof(pass_data) < 1200:
 
         if os.path.exists(final_qr_path):
             shutil.rmtree(final_qr_path)
@@ -175,22 +201,31 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             os.mkdir(final_qr_path)
 
         if int(copy) == 1:
-            json1 = {'Packet_Number': '1', 'QR-Name': 'QR-Code1', 'Data': dump}
-            dumped = json.dumps(json1)
-
+            qr_data = { 'Packet_Number': '1', 
+                        'QR-Name': 'QR-Code1', 
+                        'Data': pass_data  }
+            
+            #QR Code Convertion
+            qr_data_str = json.dumps(qr_data)
             out = io.BytesIO()
-            segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
+            segno.make(qr_data_str, error='h', micro=False).save(out, scale=10, border=7, kind='png')
             out.seek(0)
             img = Image.open(out)
-            font = ImageFont.truetype("Arial.ttf", 65)
-            draw = ImageDraw.Draw(img)
-            draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
+
+            try:
+                font = ImageFont.truetype("Arial.ttf", 65)
+                draw = ImageDraw.Draw(img)
+                draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
+            except OSError:
+                pass
 
             img.save(f'{final_qr_path}/QR-File1.png')
 
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR code has been stored in "Documents/PassQR".' )
-            
+            messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
+            kill_command = ["gpgconf", "--kill", "gpg-agent"]
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
+
         else:
             passp = passp.encode('latin-1')
             int_val = int.from_bytes(passp, "little")
@@ -199,35 +234,52 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             for x in range(0, int(copy)):
                 
                 if x == 0:
-                    json1 = {'Packet_Number': '1', 'QR-Name': 'QR-Code1', 'Data': dump, 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
-                    dumped = json.dumps(json1)
+                    qr_data = {'Packet_Number': 1, 'QR-Name': 'QR-Code1', 'Data': pass_data, 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
+                    dumped = json.dumps(qr_data)
 
                     out = io.BytesIO()
                     segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
                     out.seek(0)
                     img = Image.open(out)
-                    font = ImageFont.truetype("Arial.ttf", 65)
-                    draw = ImageDraw.Draw(img)
-                    draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
+
+                    try:
+                        font = ImageFont.truetype("Arial.ttf", 65)
+                        draw = ImageDraw.Draw(img)
+                        draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
+                    except OSError:
+                            pass
 
                     img.save(f'{final_qr_path}/QR-File1.png')
 
                 else:
-                    json1 = {'Packet_Number': '1', 'QR-Name': f'QR-Code1-Copy{x}', 'Data': dump, 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
-                    dumped = json.dumps(json1)
+                    qr_data = { 'Packet_Number': 1, 
+                                'QR-Name': f'QR-Code1-Copy{x + 1}', 
+                                'Data': pass_data, 
+                                'Secret': str(ss[x]), 
+                                'Threshold': f'{threshold_number}'}
+                    
+                    dumped = json.dumps(qr_data)
 
                     out = io.BytesIO()
                     segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
                     out.seek(0)
                     img = Image.open(out)
-                    font = ImageFont.truetype("Arial.ttf", 65)
-                    draw = ImageDraw.Draw(img)
 
-                    draw.text((0,0), "QR-Code 1", stroke_fill=(255,255,0), font=font)
-                    img.save(f'{final_qr_path}/QR-File1-Copy{x}.png')
+                    try:
+                        font = ImageFont.truetype("Arial.ttf", 65)
+                        draw = ImageDraw.Draw(img)
+                        draw.text((0,0), f"QR-Code1-Copy{x + 1}", stroke_fill=(255,255,0), font=font)
+                    except OSError:
+                        pass
+
+                    img.save(f'{final_qr_path}/QR-File1-Copy{x + 1}.png')
 
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR codes has been stored in "Documents/PassQR".')
+            messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
+
+            kill_command = ["gpgconf", "--kill", "gpg-agent"]
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
+
     else:
         if os.path.exists(final_qr_path):
             shutil.rmtree(final_qr_path)
@@ -242,105 +294,137 @@ def qr_convert(json_list, copy, passp, threshold_number, self):
             os.mkdir(qr_path)
 
         if int(copy) == 1:
-            packet2 = []
-            for i in range(0, len(dump), 650):
-                packet2.append(dump[i:i+650])
-            for index in range(0, len(packet2)):
-                json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index]}
 
-                dumped = json.dumps(json1)
+            #Data Division
+            divided_packet = []
+            for i in range(0, len(pass_data), 550):
+                divided_packet.append(pass_data[i:i+550])
+            for index in range(0, len(divided_packet)):
+
+                qr_data = { 'Packet_Number': index + 1, 
+                         'QR-Name': f'QR-Code{index + 1}', 
+                         'Data': divided_packet[index] }
+
+                dumped = json.dumps(qr_data)
 
                 out = io.BytesIO()
                 segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
                 out.seek(0)
                 img = Image.open(out)
-                font = ImageFont.truetype("Arial.ttf", 65)
-                draw = ImageDraw.Draw(img)
-                draw.text((55,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
+
+                try:
+                    font = ImageFont.truetype("Arial.ttf", 65)
+                    draw = ImageDraw.Draw(img)
+                    draw.text((55,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
+                except OSError:
+                    pass
 
                 img.save(f'{qr_path}/QR{index}.png')
             
-            combine_img()
+            combine_img(copy)
             shutil.rmtree(qr_path)
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR codes has been stored in "Documents/PassQR".')
+            messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
+
+            kill_command = ["gpgconf", "--kill", "gpg-agent"]
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
 
         else:
             global replay
             global qr_file_count
-
+            
             passp = passp.encode('latin-1')
             int_val = int.from_bytes(passp, "little")
             ss = shamirs.shares(int_val, quantity=int(copy), modulus= prime, threshold=int(threshold_number))
             
             for x in range(0, int(copy)):
-                packet2 = []
+                divided_packet = []
                 if x == 0:
-                    for i in range(0, len(dump), 650):
-                        packet2.append(dump[i:i+650])
-                    for index in range(0, len(packet2)):
+                    for i in range(0, len(pass_data), 550):
+                        divided_packet.append(pass_data[i:i+550])
+                    for index in range(0, len(divided_packet)):
                         if index == 0:
-                            json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
+                            qr_data = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': divided_packet[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
                         else:
-                            json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': packet2[index]}
+                            qr_data = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}', 'Data': divided_packet[index]}
 
-                        dumped = json.dumps(json1)
+                        dumped = json.dumps(qr_data)
 
                         out = io.BytesIO()
                         segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
                         out.seek(0)
                         img = Image.open(out)
-                        font = ImageFont.truetype("Arial.ttf", 65)
-                        draw = ImageDraw.Draw(img)
-                        draw.text((0,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
+
+                        try:
+                            font = ImageFont.truetype("Arial.ttf", 65)
+                            draw = ImageDraw.Draw(img)
+                            draw.text((0,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
+                        except OSError:
+                            pass
 
                         img.save(f'{qr_path}/QR{index}.png')
             
-                    combine_img()
+                    combine_img(copy)
                     qr_file_count = 0
                     replay +=1
 
                 else:
-                    for i in range(0, len(dump), 650):
-                        packet2.append(dump[i:i+650])
-                    for index in range(0, len(packet2)):
+                    for i in range(0, len(pass_data), 550):
+                        divided_packet.append(pass_data[i:i+550])
+                    for index in range(0, len(divided_packet)):
                         if index == 0:
-                            json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}-Copy{x}', 'Data': packet2[index], 'Secret': str(ss[x]), 'Threshold': f'{threshold_number}'}
-                        else:
-                            json1 = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}-Copy{x}', 'Data': packet2[index]}
 
-                        dumped = json.dumps(json1)
+                            qr_data = { 'Packet_Number': index + 1, 
+                                     'QR-Name': f'QR-Code{index + 1}-Copy{x + 1}', 
+                                     'Data': divided_packet[index], 
+                                     'Secret': str(ss[x]), 
+                                     'Threshold': f'{threshold_number}' }
+
+                        else:
+                            qr_data = {'Packet_Number': index + 1, 'QR-Name': f'QR-Code{index + 1}-Copy{x + 1}', 'Data': divided_packet[index]}
+
+                        dumped = json.dumps(qr_data)
 
                         out = io.BytesIO()
                         segno.make(dumped, error='h', micro=False).save(out, scale=10, border=7, kind='png')
                         out.seek(0)
                         img = Image.open(out)
-                        font = ImageFont.truetype("Arial.ttf", 65)
-                        draw = ImageDraw.Draw(img)
-                        draw.text((0,0), f"QR-Code {index + 1}", stroke_fill=(255,255,0), font=font)
+
+                        try:
+                            font = ImageFont.truetype("Arial.ttf", 65)
+                            draw = ImageDraw.Draw(img)
+                            draw.text((0,0), f"QR-Code{index + 1}-Copy{x + 1}", stroke_fill=(255,255,0), font=font)
+                        except OSError:
+                            pass
 
                         img.save(f'{qr_path}/QR{index}.png')
             
-                    combine_img()
+                    combine_img(copy)
                     qr_file_count = 0
                     replay +=1
                     
             replay = 0
             shutil.rmtree(qr_path)
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', 'Pass files converted to QR code successfully. Your QR codes has been stored in "Documents/PassQR".')
+            messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
 
-def sym_enc(passp, decrypt_data, files, copy, threshold, copy_windows, self):
+            kill_command = ["gpgconf", "--kill", "gpg-agent"]
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
+            
+def sym_enc(passp, decrypted_password_data, files, copy, threshold, copy_windows, self):
     copy_windows.destroy()
-    json_list = []
+    password_list = []
     for y in range(0, len(files)):
         command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
-        out2 = subprocess.check_output(command2, input=decrypt_data[y], universal_newlines=False, shell=False)
+        out2 = subprocess.check_output(command2, input=decrypted_password_data[y], universal_newlines=False, shell=False)
         encode = base64.b64encode(out2)
-        json_file = {f'File{y}':files[y], 'cipher': encode.decode('ascii')+"\n"}
-        json_list.append(json_file)
+
+        password = {f'File{y}':files[y],
+                    'cipher': encode.decode('ascii')+"\n"}
+
+        password_list.append(password)
     
-    qr_convert(json_list, copy, passp, threshold, self)
+    qr_convert(password_list, copy, passp, threshold, self)
 
 def get_threshold_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3):
     copy_number = spin_box.get()
@@ -422,7 +506,7 @@ def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data
         re_passp_error_count -= 1
         if re_passp_error_count <= 0:
             sym_passphrase_windows.destroy()
-            messagebox.showinfo('', 'Symmetric encryption could not be completed due to incorrent passphrase input.')
+            messagebox.showinfo('', 'Symmetric encryption could not be completed due to incorrent passphrase input.', parent=self)
             main_window.App.enable_button(self)
             error_count = 3
             re_passp_error_count = 3
@@ -515,7 +599,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                 error_count -= 1
                 if error_count <= 0:
                     newWindow.destroy()
-                    messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.')
+                    messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.', parent=self)
                     error_count = 3
                     re_passp_error_count = 3
                     main_window.App.enable_button(self)
@@ -525,7 +609,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
             messagebox.showinfo('No Passphrase', 'Please enter your passphrase.', parent=newWindow)
     except FileNotFoundError:
         newWindow.destroy()
-        messagebox.showerror("Error", "An error occurred while decrypting your files. Please check your pass storage and refresh the pass list.")
+        messagebox.showerror("Error", "An error occurred while decrypting your files. Please check your pass storage and refresh the pass list.", parent=self)
         error_count = 3
         re_passp_error_count = 3
         main_window.App.enable_button(self)
@@ -552,5 +636,5 @@ def asym_dec_window(self, pass_files, files):
     enter_button = customtkinter.CTkButton(newWindow, text='Enter', command=lambda: get_entry(newWindow, passp_entry.get(), pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self), fg_color="darkred", hover_color="#D2042D", width=60)
     enter_button.place(x=50,y=100)
 
-    exit_button = customtkinter.CTkButton(newWindow, text="Cancel Convert", command=lambda: cancel_convert(self, newWindow), fg_color="darkred", hover_color="#D2042D")
+    exit_button = customtkinter.CTkButton(newWindow, text="Cancel Backup", command=lambda: cancel_convert(self, newWindow), fg_color="darkred", hover_color="#D2042D")
     exit_button.place(x=125,y=100)

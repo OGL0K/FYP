@@ -19,7 +19,6 @@ from natsort import natsorted
 from PIL import Image, ImageTk
 from tkinter import messagebox
 
-
 #Global Variables
 pwd = os.path.expanduser('~')
 password_store = f"{pwd}/.password-store"
@@ -48,36 +47,39 @@ def exit_scan(self, scanWindow, cam, scanned_values):
 def check_passp_and_import(self, final_json, passp_entry, passp_window):
     global error_count
     passp = passp_entry.get()
-    with open(f'{password_store_gpg_id}', 'r') as id_file:
-        stripped = str(id_file.read()).strip()
+    
     try:
         try:
-            out_array = []
+            decrypted_password_data = []
             for i in range(0, len(final_json)):
                 decoded_data = base64.b64decode(final_json[i]["cipher"])
                 command1 = ["gpg", "-d", "--quiet", "--pinentry-mode=loopback", f"--passphrase={passp}"]
                 out1 = subprocess.check_output(command1, input=decoded_data, universal_newlines=False, shell=False)
-                out_array.append(out1)
+                decrypted_password_data.append(out1)
 
         except subprocess.CalledProcessError:
         
                 global error_count
                 error_count -= 1
                 if error_count <= 0:
+                    messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.', parent=passp_window)
                     passp_window.destroy()
-                    messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.')
                     main_window.App.enable_button(self)
                     error_count = 3
                 else:
-                    messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)')
+                    messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)', parent=passp_window)
 
+        with open(f'{password_store_gpg_id}', 'r') as id_file:
+            gpg_key = str(id_file.read()).strip()
+        
         for i in range(0, len(final_json)):
                 os.makedirs(os.path.dirname(f'{password_store}/{final_json[i][f"File{i}"]}'), exist_ok=True)
-                command2 = ["gpg", "--batch", "--quiet", "--yes", "--encrypt", "-r", stripped, "-o" ,f"{password_store}/{final_json[i][f'File{i}']}.gpg"]
-                out2 = subprocess.check_output(command2, input=out_array[i], universal_newlines=False, shell=False)
-        
+                command2 = ["gpg", "--batch", "--quiet", "--yes", "--encrypt", "-r", gpg_key, "-o" ,f"{password_store}/{final_json[i][f'File{i}']}.gpg"]
+                out2 = subprocess.check_output(command2, input=decrypted_password_data[i], universal_newlines=False, shell=False)
+
+        decrypted_password_data.clear()
         passp_window.destroy()
-        messagebox.showinfo('Success', 'Your data have been imported to the pass store successfully.')
+        messagebox.showinfo('Success', 'Your passwords have been imported to the pass store successfully.', parent=self)
         main_window.App.refresh(self)
         main_window.App.enable_button(self)
         
@@ -116,7 +118,7 @@ def get_passp(self, final_json, scanWindow, cam):
 def evaluate_packets(self, scanWindow, cam, scanned_values):
     try:
         json_list1 = []
-        sort_scanned_values = sorted(scanned_values)
+        sort_scanned_values = natsorted(scanned_values)
 
         for x in range(0, len(sort_scanned_values)):
             a = json.loads(sort_scanned_values[x])
@@ -146,13 +148,13 @@ def scan_qr_start(self):
     if os.path.exists(password_store):
         pass
     else:
-        messagebox.showinfo('No Pass Repository', 'There is no pass repository located on your machine. In order to use this feature please create a pass repository by clicking "Generate GPG Key & Pass Storage" button.')
+        messagebox.showinfo('No Pass Repository', 'There is no pass repository located on your machine. In order to use this feature please create a pass repository by clicking "Generate GPG Key & Pass Storage" button.', parent=self)
         return None
 
-    if messagebox.askyesno('Scan QR', 'Are you sure to scan your QR code(s) and importing its values to your pass repository?'):
+    if messagebox.askyesno('Scan QR', 'Are you sure to scan your QR code(s) and importing its values to your pass repository?', parent=self):
 
+        #Connecting to the Computer Camera
         try:
-            
             cam = cv2.VideoCapture(0)
             cam.set(3, 640)
             cam.set(4, 480)
@@ -160,7 +162,7 @@ def scan_qr_start(self):
                 raise ConnectionError
             
         except ConnectionError:
-            messagebox.showerror('Error','Could not find any camera.')
+            messagebox.showerror('Error','Could not find any camera.', parent=self)
         
         else: 
             scanned_values = []
@@ -191,7 +193,7 @@ def scan_qr_start(self):
             status_label = customtkinter.CTkLabel(status_frame, text="Please scan your QR code on the camera above.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
             status_label.place(x=20, y=13)
 
-            delete_QR_button = customtkinter.CTkButton(sidebar_frame1, text='Delete QR Code' ,command=lambda: delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values),  fg_color="darkred", hover_color="#D2042D")
+            delete_QR_button = customtkinter.CTkButton(sidebar_frame1, text='Delete List' ,command=lambda: delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values),  fg_color="darkred", hover_color="#D2042D")
             delete_QR_button.place(x=48, y=400)
 
             continue_button = customtkinter.CTkButton(sidebar_frame1, text='Import', command=lambda: evaluate_packets(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
@@ -199,22 +201,27 @@ def scan_qr_start(self):
             scan_exit = customtkinter.CTkButton(sidebar_frame1, text='Exit Scan', command=lambda: exit_scan(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
             scan_exit.place(x=48, y=500)
             
-            detector = cv2.QRCodeDetector()
-
+            #QR Code Detection and Scan
             while True:
                 try: 
-                    ret, frame = cam.read()
-                    data, bbox, straight_qrcode = detector.detectAndDecode(frame)
+                    _, frame = cam.read()
+                    scanned_qr_data = pyzbar.decode(frame)
                     
+                    for i in scanned_qr_data:
+                        pnt = i.polygon
+                        points = np.array(pnt, np.int32)
+                        points = points.reshape(-1,1,2)
+                        cv2.polylines(frame, [points], True, (255,0,255), 5)
                     frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+
                     img_update = ImageTk.PhotoImage(Image.fromarray(frame))
                     scanlabel.configure(image=img_update)
                     scanlabel.image=img_update
                     scanlabel.update()
 
-                    if data not in scanned_values:
+                    if scanned_qr_data[0].data.decode('ascii') not in scanned_values:
                         array = []
-                        convert_package = json.loads(data)
+                        convert_package = json.loads(scanned_qr_data[0].data.decode('ascii'))
                         scanned_packets_listbox.insert(0, convert_package['QR-Name'])
                         
                         if scanned_packets_listbox.size() <= 1:
@@ -230,20 +237,27 @@ def scan_qr_start(self):
                             for y in range(0, len(sorted_array)):
                                 scanned_packets_listbox.insert(y, sorted_array[y])
 
-                        scanned_values.append(data)
+                        scanned_values.append(scanned_qr_data[0].data.decode('ascii'))
                         status_label.configure(text=f"{convert_package['QR-Name']} has been scanned successfully.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="green")
                         status_label.place(x=20, y=13)
                         continue_button.place(x=48, y=440)
                         time.sleep(1.5)
 
-                    elif data in scanned_values:
-                        convert_package = json.loads(data)
+                    elif scanned_qr_data[0].data.decode('ascii') in scanned_values:
+                        convert_package = json.loads(scanned_qr_data[0].data.decode('ascii'))
                         status_label.configure(text=f"Error: {convert_package['QR-Name']} has been already scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
                         time.sleep(1.5)
                 
                 except json.decoder.JSONDecodeError:
-                    pass
+                    status_label.configure(text=f"Error: Invalid QR Code has been scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
+                    status_label.place(x=20, y=13)
+                    time.sleep(1.5)
+
+                except KeyError:
+                    status_label.configure(text=f"Error: Invalid QR Code has been scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
+                    status_label.place(x=20, y=13)
+                    time.sleep(1.5)
 
                 except tk.TclError:    
                     pass
@@ -256,22 +270,23 @@ def scan_qr_start(self):
 
 def complete_shamir(self, shamirWindow, cam, shamir_scan_values):
     try:
-        json_list2 = []
+        shamir_list = []
         for y in range(0, len(shamir_scan_values)):
             load2 = json.loads(shamir_scan_values[y])
-            json_list2.append(load2)
+            shamir_list.append(load2)
         
         threshold_list = [] 
-        for x in range(0, len(json_list2)):
-            threshold_list.append(json_list2[x]['Threshold'])
+        for x in range(0, len(shamir_list)):
+            threshold_list.append(shamir_list[x]['Threshold'])
 
         result = threshold_list.count(threshold_list[0]) == len(threshold_list)
 
         if (result):
+
+            #Passphrase Share Combination
             secret_list = []
-            
-            for z in range(0, len(json_list2)):
-                conv = eval(json_list2[z]['Secret'])
+            for z in range(0, len(shamir_list)):
+                conv = eval(shamir_list[z]['Secret'])
                 secret_list.append(conv)
             
             passp_recover = shamirs.interpolate(secret_list, threshold=int(threshold_list[0]))
@@ -284,15 +299,14 @@ def complete_shamir(self, shamirWindow, cam, shamir_scan_values):
             shamirWindow.destroy()
             shamir_scan_values = []
             main_window.App.enable_button(self)
-            messagebox.showinfo('Success', f'Your passphrase is: {passp_recover}')
+            messagebox.showinfo('Success', f'Your passphrase is: {passp_recover}', parent=self)
+            passp_recover = ""
     
         else:
             messagebox.showinfo('Error','There was a problem while retrieving your passphrase. Please check the QR codes you have scanned.', parent=shamirWindow)
 
     except ValueError:
         messagebox.showinfo('Error','The number of QR codes you have scanned does not meet the minimum threshold.', parent=shamirWindow)
-    except KeyError:
-        messagebox.showinfo('Error','The QR code(s) you have scanned does not include values to retrieve your passphrase', parent=shamirWindow)
 
 def delete_shamir_value(status_label, continue_button, shamir_scan_values, scanned_shamir_listbox):
     if len(shamir_scan_values) == 0:
@@ -305,7 +319,7 @@ def delete_shamir_value(status_label, continue_button, shamir_scan_values, scann
         scanned_shamir_listbox.delete(0, tk.END)
 
 def shamir_scan_start(self):
-    if messagebox.askyesno('Scan QR', 'Are you sure to retreive your passphrase?'):
+    if messagebox.askyesno('Scan QR', 'Are you sure to retreive your passphrase?', parent=self):
         try:
             cam = cv2.VideoCapture(0)
             cam.set(3, 640)
@@ -314,7 +328,7 @@ def shamir_scan_start(self):
                 raise ConnectionError
             
         except ConnectionError:
-            messagebox.showerror('Error','Could not find any camera.') 
+            messagebox.showerror('Error','Could not find any camera.', parent=self) 
         
         else: 
             shamir_scan_values = []
@@ -342,10 +356,10 @@ def shamir_scan_start(self):
             status_frame = customtkinter.CTkFrame(shamirWindow, width=620, height=55, corner_radius=15)
             status_frame.place(x=10, y=490)
 
-            status_label = customtkinter.CTkLabel(status_frame, text="Please scan your QR code on the camera above.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
+            status_label = customtkinter.CTkLabel(status_frame, text="Please scan the first QR code of each copy.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="white")
             status_label.place(x=20, y=13)
 
-            delete_QR_button = customtkinter.CTkButton(sidebar_frame2, text='Delete QR Code' ,command=lambda: delete_shamir_value(status_label, continue_button, shamir_scan_values, scanned_shamir_listbox),  fg_color="darkred", hover_color="#D2042D")
+            delete_QR_button = customtkinter.CTkButton(sidebar_frame2, text='Delete List' ,command=lambda: delete_shamir_value(status_label, continue_button, shamir_scan_values, scanned_shamir_listbox),  fg_color="darkred", hover_color="#D2042D")
             delete_QR_button.place(x=48, y=400)
 
             continue_button = customtkinter.CTkButton(sidebar_frame2, text='Retrieve', command=lambda: complete_shamir(self, shamirWindow, cam, shamir_scan_values),  fg_color="darkred", hover_color="#D2042D")
@@ -355,13 +369,14 @@ def shamir_scan_start(self):
         
             while True:
                 try: 
-                    ret, frame = cam.read()
-                    s = pyzbar.decode(frame)
+                    _, frame = cam.read()
+                    scanned_qr_data = pyzbar.decode(frame)
                     
-                    for x in s:
-                        pts = np.array([x.polygon], np.int32)
-                        pts = pts.reshape(-1,1,2)
-                        cv2.polylines(frame, [pts], True, (50,205,50), 5)
+                    for i in scanned_qr_data:
+                        pnt = i.polygon
+                        points = np.array(pnt, np.int32)
+                        points = points.reshape(-1,1,2)
+                        cv2.polylines(frame, [points], True, (50,205,50), 5)
 
                     frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                     img_update = ImageTk.PhotoImage(Image.fromarray(frame))
@@ -369,14 +384,14 @@ def shamir_scan_start(self):
                     scanlabel.image=img_update
                     scanlabel.update()
 
-                    if s[0].data.decode('ascii')[1:20] != '"Packet_Number": 1,':
+                    if scanned_qr_data[0].data.decode('ascii')[1:20] != '"Packet_Number": 1,':
                         status_label.configure(text='Error: Invalid QR code has been scanned.', font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
                         time.sleep(1.5)
 
-                    elif s[0].data.decode('ascii') not in shamir_scan_values:
+                    elif scanned_qr_data[0].data.decode('ascii') not in shamir_scan_values:
                         array = []
-                        convert_shamir = json.loads(s[0].data.decode('ascii'))
+                        convert_shamir = json.loads(scanned_qr_data[0].data.decode('ascii'))
                         
 
                         if not convert_shamir['Threshold']:
@@ -395,20 +410,20 @@ def shamir_scan_start(self):
                             for y in range(0, len(sorted_array)):
                                 scanned_shamir_listbox.insert(y, sorted_array[y])
 
-                        shamir_scan_values.append(s[0].data.decode('ascii'))
+                        shamir_scan_values.append(scanned_qr_data[0].data.decode('ascii'))
                         status_label.configure(text=f"{convert_shamir['QR-Name']} has been scanned successfully.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="green")
                         status_label.place(x=20, y=13)
                         continue_button.place(x=48, y=440)
                         time.sleep(1.5)
 
-                    elif s[0].data.decode('ascii') in shamir_scan_values:
-                        convert_shamir = json.loads(s[0].data.decode('ascii'))
+                    elif scanned_qr_data[0].data.decode('ascii') in shamir_scan_values:
+                        convert_shamir = json.loads(scanned_qr_data[0].data.decode('ascii'))
                         status_label.configure(text=f"Error: {convert_shamir['QR-Name']} has been already scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                         status_label.place(x=20, y=13)
                         time.sleep(1.5)
                 
                 except KeyError:
-                    status_label.configure(text=f"Error: Passphrase value does not include in this QR Code.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
+                    status_label.configure(text=f"Error: Passphrase share does not include in this QR Code.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                     status_label.place(x=20, y=13)
                     time.sleep(1.5)
 
@@ -429,44 +444,57 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
             out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL, shell=False)
         
         except FileNotFoundError:
-            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".')
+            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".', parent=gen_gpg_pass_win)
             re_passp_error_count = 3
             gen_gpg_pass_win.destroy()
             main_window.App.enable_button(self)
         
         except subprocess.CalledProcessError:
+        
+            gpg = gnupg.GPG()
+
+            #GPG Key Generation
+            input_data = gpg.gen_key_input( 
+                name_real=name, 
+                name_email=email,
+                passphrase=passphrase, 
+                key_type='eddsa', 
+                key_curve='ed25519', 
+                key_usage='sign', 
+                subkey_type='ecdh', 
+                subkey_curve='cv25519')
+            key = gpg.gen_key(input_data)
+
+            passphrase = ""
+
             if os.path.exists(password_store):
                 shutil.rmtree(password_store)
             else:
                 pass
 
-            gpg = gnupg.GPG()
-
-            input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
-                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519', expire_date='2y')
-
-            key = gpg.gen_key(input_data)
-
             command2 = ["pass", "init", f"{key}"]
             out2 = subprocess.check_output(command2, universal_newlines=False, shell=False)
-            
+
             messagebox.showinfo('Success', 'New GPG key and pass store generated.', parent=gen_gpg_pass_win)
             gen_gpg_pass_win.destroy()
             main_window.App.refresh(self)
             main_window.App.enable_button(self)
         
         else:
-            if os.path.exists(password_store):
-                shutil.rmtree(password_store)
-            else:
-                pass
 
             gpg = gnupg.GPG()
 
             input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
-                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519', expire_date='2y')
+                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519')
 
             key = gpg.gen_key(input_data)
+            
+            passphrase = ""
+            
+            if os.path.exists(password_store):
+                shutil.rmtree(password_store)
+            else:
+                pass
 
             command2 = ["pass", "init", f"{key}"]
             out2 = subprocess.check_output(command2, universal_newlines=False, shell=False)
@@ -479,7 +507,7 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
     else:
         re_passp_error_count -= 1
         if re_passp_error_count <= 0:
-            messagebox.showinfo('', 'Symmetric encryption could not be completed due to incorrent passphrase input.')
+            messagebox.showinfo('', 'Symmetric encryption could not be completed due to incorrent passphrase input.', parent=gen_gpg_pass_win)
             gen_gpg_pass_win.destroy()
             main_window.App.enable_button(self)
         else:
@@ -549,7 +577,7 @@ def get_email(self, input_label, input_label2, input_entry2, enter_button, gen_g
 def get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win, cancel_button, instructions_label):
     name = input_entry.get()
     if name == "":
-        messagebox.showinfo('Invalid Name', 'Name should not be empty.')
+        messagebox.showinfo('Invalid Name', 'Name should not be empty.', parent=gen_gpg_pass_win)
     else:
         instructions_label.configure(text="GPG Key Generation - E-Mail")
         input_entry.destroy()
@@ -585,12 +613,13 @@ def gen_gpg_pass_win(self):
     cancel_button.place(x=125,y=100)
 
 def gen_gpg_pass_start(self):
+    #Check if pass exists in the machine.
     try:
         command1 = ["pass"]
         out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL, shell=False)
         
     except FileNotFoundError:
-        messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".')
+        messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".', parent=self)
         main_window.App.enable_button(self)
     
     except subprocess.CalledProcessError:
@@ -599,6 +628,6 @@ def gen_gpg_pass_start(self):
     
     else:
         if os.path.exists(password_store):
-            if messagebox.askyesno('Pass Storage Exists', 'There is an exiting pass storage located on your machine. Do you still wish to create a new one?'):
+            if messagebox.askyesno('Pass Storage Exists', 'There is an exiting pass storage located on your machine. Do you still wish to create a new one?', parent=self):
                 main_window.App.disable_button(self)
                 gen_gpg_pass_win(self)
