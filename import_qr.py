@@ -24,6 +24,7 @@ pwd = os.path.expanduser('~')
 password_store = f"{pwd}/.password-store"
 password_store_gpg_id = f"{pwd}/.password-store/.gpg-id"
 
+passphrase = ""
 error_count = 3
 re_passp_error_count = 3
 
@@ -32,13 +33,15 @@ def disable_close():
 
 def exit_gen_gpg_passp(self, window):
     if messagebox.askyesno('Cancel Generation', 'Are you sure to cancel your generation process?', parent=window):
+        global passphrase
+        passphrase = ""
         window.destroy()
         main_window.App.enable_button(self)
 
-def exit_scan(self, scanWindow, cam, scanned_values):
+def exit_scan(self, scanWindow, camera, scanned_values):
     if messagebox.askyesno('Exit Scan', 'Are you sure to exit scanning and cancel all your process?', parent=scanWindow):
         scanned_values == []
-        cam.release()        
+        camera.release()        
         cv2.waitKey(1)
         cv2.destroyAllWindows()
         scanWindow.destroy()
@@ -88,8 +91,8 @@ def check_passp_and_import(self, final_json, passp_entry, passp_window):
     except UnboundLocalError:
         pass
 
-def get_passp(self, final_json, scanWindow, cam):
-    cam.release()        
+def get_passp(self, final_json, scanWindow, camera):
+    camera.release()        
     cv2.waitKey(1)
     cv2.destroyAllWindows()
     scanWindow.destroy()
@@ -115,7 +118,7 @@ def get_passp(self, final_json, scanWindow, cam):
     enter_button = customtkinter.CTkButton(passp_window, text='Enter', command=lambda: check_passp_and_import(self, final_json, passp_entry, passp_window), fg_color="darkred", hover_color="#D2042D", width=60)
     enter_button.place(x=50,y=100)
 
-def evaluate_packets(self, scanWindow, cam, scanned_values):
+def evaluate_packets(self, scanWindow, camera, scanned_values):
     try:
         json_list1 = []
         sort_scanned_values = natsorted(scanned_values)
@@ -129,7 +132,7 @@ def evaluate_packets(self, scanWindow, cam, scanned_values):
             data_string += json_list1[index]['Data']
 
         final_json = json.loads(data_string)
-        get_passp(self, final_json, scanWindow, cam)
+        get_passp(self, final_json, scanWindow, camera)
     
     except json.decoder.JSONDecodeError:
         messagebox.showinfo('Error', 'There was a problem while processing your data. Please check the QR codes you have scanned.', parent=scanWindow)
@@ -155,10 +158,10 @@ def scan_qr_start(self):
 
         #Connecting to the Computer Camera
         try:
-            cam = cv2.VideoCapture(0)
-            cam.set(3, 640)
-            cam.set(4, 480)
-            if cam is None or not cam.isOpened():
+            camera = cv2.VideoCapture(0)
+            camera.set(3, 640)
+            camera.set(4, 480)
+            if camera is None or not camera.isOpened():
                 raise ConnectionError
             
         except ConnectionError:
@@ -196,15 +199,15 @@ def scan_qr_start(self):
             delete_QR_button = customtkinter.CTkButton(sidebar_frame1, text='Delete List' ,command=lambda: delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values),  fg_color="darkred", hover_color="#D2042D")
             delete_QR_button.place(x=48, y=400)
 
-            continue_button = customtkinter.CTkButton(sidebar_frame1, text='Import', command=lambda: evaluate_packets(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
+            continue_button = customtkinter.CTkButton(sidebar_frame1, text='Import', command=lambda: evaluate_packets(self, scanWindow, camera, scanned_values),  fg_color="darkred", hover_color="#D2042D")
 
-            scan_exit = customtkinter.CTkButton(sidebar_frame1, text='Exit Scan', command=lambda: exit_scan(self, scanWindow, cam, scanned_values),  fg_color="darkred", hover_color="#D2042D")
+            scan_exit = customtkinter.CTkButton(sidebar_frame1, text='Exit Scan', command=lambda: exit_scan(self, scanWindow, camera, scanned_values),  fg_color="darkred", hover_color="#D2042D")
             scan_exit.place(x=48, y=500)
             
             #QR Code Detection and Scan
             while True:
                 try: 
-                    _, frame = cam.read()
+                    _, frame = camera.read()
                     scanned_qr_data = pyzbar.decode(frame)
                     
                     for i in scanned_qr_data:
@@ -212,11 +215,11 @@ def scan_qr_start(self):
                         points = np.array(pnt, np.int32)
                         points = points.reshape(-1,1,2)
                         cv2.polylines(frame, [points], True, (255,0,255), 5)
+                    
                     frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-
-                    img_update = ImageTk.PhotoImage(Image.fromarray(frame))
-                    scanlabel.configure(image=img_update)
-                    scanlabel.image=img_update
+                    image_update = ImageTk.PhotoImage(Image.fromarray(frame))
+                    scanlabel.configure(image=image_update)
+                    scanlabel.image=image_update
                     scanlabel.update()
 
                     if scanned_qr_data[0].data.decode('ascii') not in scanned_values:
@@ -268,42 +271,43 @@ def scan_qr_start(self):
                 except TypeError:
                     break
 
-def complete_shamir(self, shamirWindow, cam, shamir_scan_values):
+def complete_shamir(self, shamirWindow, camera, shamir_scan_values):
     try:
-        shamir_list = []
-        for y in range(0, len(shamir_scan_values)):
-            load2 = json.loads(shamir_scan_values[y])
-            shamir_list.append(load2)
-        
-        threshold_list = [] 
-        for x in range(0, len(shamir_list)):
-            threshold_list.append(shamir_list[x]['Threshold'])
-
-        result = threshold_list.count(threshold_list[0]) == len(threshold_list)
-
-        if (result):
-
-            #Passphrase Share Combination
-            secret_list = []
-            for z in range(0, len(shamir_list)):
-                conv = eval(shamir_list[z]['Secret'])
-                secret_list.append(conv)
+        if messagebox.askyesno('Are you sure?', 'Do you want to retrieve your passphrase? Please click yes if you are sure that no one can see your screen.', parent=shamirWindow):
+            shamir_list = []
+            for y in range(0, len(shamir_scan_values)):
+                load2 = json.loads(shamir_scan_values[y])
+                shamir_list.append(load2)
             
-            passp_recover = shamirs.interpolate(secret_list, threshold=int(threshold_list[0]))
-            passp_recover = passp_recover.to_bytes(len(str(passp_recover)), 'little')
-            passp_recover = passp_recover.decode('latin-1')
+            threshold_list = [] 
+            for x in range(0, len(shamir_list)):
+                threshold_list.append(shamir_list[x]['Threshold'])
 
-            cam.release()        
-            cv2.waitKey(1)
-            cv2.destroyAllWindows()
-            shamirWindow.destroy()
-            shamir_scan_values = []
-            main_window.App.enable_button(self)
-            messagebox.showinfo('Success', f'Your passphrase is: {passp_recover}', parent=self)
-            passp_recover = ""
-    
-        else:
-            messagebox.showinfo('Error','There was a problem while retrieving your passphrase. Please check the QR codes you have scanned.', parent=shamirWindow)
+            result = threshold_list.count(threshold_list[0]) == len(threshold_list)
+
+            if (result):
+
+                #Passphrase Share Combination
+                secret_list = []
+                for z in range(0, len(shamir_list)):
+                    conv = eval(shamir_list[z]['Secret'])
+                    secret_list.append(conv)
+                
+                passp_recover = shamirs.interpolate(secret_list, threshold=int(threshold_list[0]))
+                passp_recover = passp_recover.to_bytes(len(str(passp_recover)), 'little')
+                passp_recover = passp_recover.decode('latin-1')
+
+                camera.release()        
+                cv2.waitKey(1)
+                cv2.destroyAllWindows()
+                shamirWindow.destroy()
+                shamir_scan_values = []
+                main_window.App.enable_button(self)
+                messagebox.showinfo('Success', f'Your passphrase is: {passp_recover}', parent=self)
+                passp_recover = ""
+
+            else:
+                messagebox.showinfo('Error','There was a problem while retrieving your passphrase. Please check the QR codes you have scanned.', parent=shamirWindow)
 
     except ValueError:
         messagebox.showinfo('Error','The number of QR codes you have scanned does not meet the minimum threshold.', parent=shamirWindow)
@@ -321,10 +325,10 @@ def delete_shamir_value(status_label, continue_button, shamir_scan_values, scann
 def shamir_scan_start(self):
     if messagebox.askyesno('Scan QR', 'Are you sure to retreive your passphrase?', parent=self):
         try:
-            cam = cv2.VideoCapture(0)
-            cam.set(3, 640)
-            cam.set(4, 480)
-            if cam is None or not cam.isOpened():
+            camera = cv2.VideoCapture(0)
+            camera.set(3, 640)
+            camera.set(4, 480)
+            if camera is None or not camera.isOpened():
                 raise ConnectionError
             
         except ConnectionError:
@@ -362,14 +366,14 @@ def shamir_scan_start(self):
             delete_QR_button = customtkinter.CTkButton(sidebar_frame2, text='Delete List' ,command=lambda: delete_shamir_value(status_label, continue_button, shamir_scan_values, scanned_shamir_listbox),  fg_color="darkred", hover_color="#D2042D")
             delete_QR_button.place(x=48, y=400)
 
-            continue_button = customtkinter.CTkButton(sidebar_frame2, text='Retrieve', command=lambda: complete_shamir(self, shamirWindow, cam, shamir_scan_values),  fg_color="darkred", hover_color="#D2042D")
+            continue_button = customtkinter.CTkButton(sidebar_frame2, text='Retrieve', command=lambda: complete_shamir(self, shamirWindow, camera, shamir_scan_values),  fg_color="darkred", hover_color="#D2042D")
 
-            scan_exit = customtkinter.CTkButton(sidebar_frame2, text='Exit Scan', command=lambda: exit_scan(self, shamirWindow, cam, shamir_scan_values),  fg_color="darkred", hover_color="#D2042D")
+            scan_exit = customtkinter.CTkButton(sidebar_frame2, text='Exit Scan', command=lambda: exit_scan(self, shamirWindow, camera, shamir_scan_values),  fg_color="darkred", hover_color="#D2042D")
             scan_exit.place(x=48, y=500)
         
             while True:
                 try: 
-                    _, frame = cam.read()
+                    _, frame = camera.read()
                     scanned_qr_data = pyzbar.decode(frame)
                     
                     for i in scanned_qr_data:
@@ -379,9 +383,9 @@ def shamir_scan_start(self):
                         cv2.polylines(frame, [points], True, (50,205,50), 5)
 
                     frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-                    img_update = ImageTk.PhotoImage(Image.fromarray(frame))
-                    scanlabel.configure(image=img_update)
-                    scanlabel.image=img_update
+                    image_update = ImageTk.PhotoImage(Image.fromarray(frame))
+                    scanlabel.configure(image=image_update)
+                    scanlabel.image=image_update
                     scanlabel.update()
 
                     if scanned_qr_data[0].data.decode('ascii')[1:20] != '"Packet_Number": 1,':
@@ -444,17 +448,22 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
             out1 = subprocess.check_output(command1, universal_newlines=False, stderr=subprocess.DEVNULL, shell=False)
         
         except FileNotFoundError:
-            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".', parent=gen_gpg_pass_win)
-            re_passp_error_count = 3
             gen_gpg_pass_win.destroy()
+            messagebox.showinfo('Error', 'A problem occured while generating a new pass store. Please make sure you have installed "pass".', parent=self)
+            re_passp_error_count = 3
             main_window.App.enable_button(self)
         
         except subprocess.CalledProcessError:
         
             gpg = gnupg.GPG()
 
+            if os.path.exists(password_store):
+                shutil.rmtree(password_store)
+            else:
+                pass
+
             #GPG Key Generation
-            input_data = gpg.gen_key_input( 
+            key_info = gpg.gen_key_input( 
                 name_real=name, 
                 name_email=email,
                 passphrase=passphrase, 
@@ -463,19 +472,14 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
                 key_usage='sign', 
                 subkey_type='ecdh', 
                 subkey_curve='cv25519')
-            key = gpg.gen_key(input_data)
-
-            passphrase = ""
-
-            if os.path.exists(password_store):
-                shutil.rmtree(password_store)
-            else:
-                pass
+            
+            key = gpg.gen_key(key_info)
 
             command2 = ["pass", "init", f"{key}"]
             out2 = subprocess.check_output(command2, universal_newlines=False, shell=False)
 
-            messagebox.showinfo('Success', 'New GPG key and pass store generated.', parent=gen_gpg_pass_win)
+            passphrase = ""
+            messagebox.showinfo('Success', 'New GPG key generated and a new pass store initialized.', parent=self)
             gen_gpg_pass_win.destroy()
             main_window.App.refresh(self)
             main_window.App.enable_button(self)
@@ -483,24 +487,23 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
         else:
 
             gpg = gnupg.GPG()
-
-            input_data = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
-                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519')
-
-            key = gpg.gen_key(input_data)
-            
-            passphrase = ""
             
             if os.path.exists(password_store):
                 shutil.rmtree(password_store)
             else:
                 pass
 
+            key_info = gpg.gen_key_input(name_real=name, name_email=email, passphrase=passphrase, key_type='eddsa', 
+                key_curve='ed25519', key_usage='sign', subkey_type='ecdh', subkey_curve='cv25519')
+
+            key = gpg.gen_key(key_info)
+            
             command2 = ["pass", "init", f"{key}"]
             out2 = subprocess.check_output(command2, universal_newlines=False, shell=False)
             
-            messagebox.showinfo('Success', 'New GPG key and pass store generated.', parent=gen_gpg_pass_win)
+            passphrase = ""
             gen_gpg_pass_win.destroy()
+            messagebox.showinfo('Success', 'New GPG key generated and a new pass store initialized.', parent=self)
             main_window.App.refresh(self)
             main_window.App.enable_button(self)
 
@@ -508,16 +511,20 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry4, gen_gpg_pass_win):
         re_passp_error_count -= 1
         if re_passp_error_count <= 0:
             messagebox.showinfo('', 'Symmetric encryption could not be completed due to incorrent passphrase input.', parent=gen_gpg_pass_win)
+            passphrase = ""
             gen_gpg_pass_win.destroy()
             main_window.App.enable_button(self)
         else:
             messagebox.showinfo('Bad Passphrase', f'Passphrases do not match (try {re_passp_error_count} out of 3)', parent=gen_gpg_pass_win)
 
 def get_passphrase(self, input_label, input_label2, input_entry3, email, enter_button, gen_gpg_pass_win, name, label5, label6, cancel_button):
+    global passphrase
+    
     special_characters = "!@#$%^&*()-+?_=,<>/"
     alphabet = "abcdefghijklmnopqrstuvwxyz"  
     numbers = "0123456789"
     passphrase = input_entry3.get()
+
     if passphrase == "":
         messagebox.showinfo('Invalid Passphrase', 'Passphrase should not be empty.', parent=gen_gpg_pass_win)
 
@@ -571,6 +578,9 @@ def get_email(self, input_label, input_label2, input_entry2, enter_button, gen_g
         enter_button.configure(command=lambda: get_passphrase(self, input_label, input_label2, input_entry3, email, enter_button, gen_gpg_pass_win, name, label5, label6, cancel_button))
         enter_button.place(x=50,y=158)
         cancel_button.place(x=125,y=158)
+
+    elif email.isascii() == False:
+        messagebox.showinfo('Invalid Email', 'Email should not contain non-ascii characters.', parent=gen_gpg_pass_win)
     else:
         messagebox.showinfo('Invalid Email','The email address you put is not valid.', parent=gen_gpg_pass_win)
 
@@ -578,6 +588,8 @@ def get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg
     name = input_entry.get()
     if name == "":
         messagebox.showinfo('Invalid Name', 'Name should not be empty.', parent=gen_gpg_pass_win)
+    elif name.isascii() == False:
+        messagebox.showinfo('Invalid Name', 'Name should not contain non-ascii characters.', parent=gen_gpg_pass_win)
     else:
         instructions_label.configure(text="GPG Key Generation - E-Mail")
         input_entry.destroy()
@@ -631,3 +643,7 @@ def gen_gpg_pass_start(self):
             if messagebox.askyesno('Pass Storage Exists', 'There is an exiting pass storage located on your machine. Do you still wish to create a new one?', parent=self):
                 main_window.App.disable_button(self)
                 gen_gpg_pass_win(self)
+
+#References
+#Lines between 219-223 and 385-389 are inspired by: https://stackoverflow.com/questions/66956444/live-video-feed-from-camera-to-tkinter-window-with-opencv
+#Lines 118, 199, 202, 204, 366, 369, 371, 541, 555, 578, 600, 621, 624 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.

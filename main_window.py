@@ -97,7 +97,7 @@ class App(customtkinter.CTk):
         self.refresh_files = customtkinter.CTkButton(self, text="Refresh List", command=self.refresh, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Scan QR Button
-        self.scan_button = customtkinter.CTkButton(self, text='Recover Passwords', command=lambda: import_qr.scan_qr_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
+        self.scan_button = customtkinter.CTkButton(self, text='Recover Passwords', command=lambda:import_qr.scan_qr_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
 
         #Retreive Passphrase with Shamir Button
         self.shamir_button = customtkinter.CTkButton(self, text='Retrieve Passphrase', command=lambda:import_qr.shamir_scan_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
@@ -278,3 +278,6 @@ class App(customtkinter.CTk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
+#References
+#Lines 100, 103, and 106 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.

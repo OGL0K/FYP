@@ -21,6 +21,8 @@ pwd = os.path.expanduser('~')
 qr_path = f"{pwd}/Documents/.QR-Code"
 final_qr_path = f'{pwd}/Documents/PassQR'
 
+decrypted_data = []
+sym_passp = ""
 replay = 0
 error_count = 3
 re_passp_error_count = 3
@@ -33,6 +35,11 @@ def cancel_convert(self, window):
     if messagebox.askyesno('Cancel Backup', 'Are you sure to cancel your backup process?', parent=window):
         global error_count
         global re_passp_error_count
+        global decrypted_data
+        global sym_passp
+
+        sym_passp = ""
+        decrypted_data = []
         error_count = 3
         re_passp_error_count = 3
         window.destroy()
@@ -465,7 +472,7 @@ def get_threshold_number(re_passp, decrypt_data, files, copy_windows, label2, la
         exit_button.place(x=275,y=125)
         enterbutton.configure(command=lambda: sym_enc(re_passp, decrypt_data, files, copy_number, spin_box.get(), copy_windows, self))
 
-def set_copy_number(re_passp, decrypt_data, files, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
+def set_copy_number(sym_passp, decrypt_data, files, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
     copy_windows.geometry("600x190")
     copy_windows.title("Number of Copies")
     re_passp_entry.destroy()
@@ -490,15 +497,14 @@ def set_copy_number(re_passp, decrypt_data, files, copy_windows, re_passp_entry,
     spin_box = tk.Spinbox(copy_windows, from_=1, to=10, textvariable=current_value, width=3, state = 'readonly', wrap=True, bg="black")
     spin_box.place(x=150,y=140)
 
-    enterbutton.configure(command=lambda: get_threshold_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3))
+    enterbutton.configure(command=lambda: get_threshold_number(sym_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3))
     enterbutton.place(x=210,y=140)
 
     exit_button.place(x=285,y=140)
 
 def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button):
-    re_passp = re_passp_entry.get()
-    if sym_passp == re_passp:
-        set_copy_number(re_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
+    if sym_passp == re_passp_entry.get():
+        set_copy_number(sym_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
 
     else:
         global re_passp_error_count
@@ -514,6 +520,8 @@ def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data
             messagebox.showinfo('Bad Passphrase', f'Passphrases do not match (try {re_passp_error_count} out of 3)', parent=sym_passphrase_windows)
 
 def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, files, self, exit_button, label5, label6):
+    global sym_passp
+
     special_characters = "!@#$%^&*()-+?_=,<>/"
     alphabet = "abcdefghijklmnopqrstuvwxyz"  
     numbers = "0123456789"
@@ -585,7 +593,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
             raise FileNotFoundError
         
         if passp:
-            decrypted_data = []
+            global decrypted_data
             try:
                 for x in range(0, len(pass_files)):
                     command1 = ["gpg", "-d", "--quiet", "--yes", "--pinentry-mode=loopback", f"--passphrase={passp}", f'{pass_files[x]}.gpg']
@@ -599,12 +607,14 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                 error_count -= 1
                 if error_count <= 0:
                     newWindow.destroy()
-                    messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.', parent=self)
+                    messagebox.showinfo('Error Asymmetric Decrypt', 
+                                        'Files could not be decrypted due to the incorrect passphrase.', parent=self)
                     error_count = 3
                     re_passp_error_count = 3
                     main_window.App.enable_button(self)
                 else:
-                    messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)', parent=newWindow)
+                    messagebox.showinfo('Bad Passphrase', 
+                                        f'Bad passphrase (try {error_count} out of 3)', parent=newWindow)
         else:
             messagebox.showinfo('No Passphrase', 'Please enter your passphrase.', parent=newWindow)
     except FileNotFoundError:
@@ -638,3 +648,7 @@ def asym_dec_window(self, pass_files, files):
 
     exit_button = customtkinter.CTkButton(newWindow, text="Cancel Backup", command=lambda: cancel_convert(self, newWindow), fg_color="darkred", hover_color="#D2042D")
     exit_button.place(x=125,y=100)
+
+#References
+#set_grid function is inspired by: https://stackoverflow.com/questions/37921295/python-pil-image-make-3x3-grid-from-sequence-images
+#Lines 473, 500, 578, 646, and 649 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.
