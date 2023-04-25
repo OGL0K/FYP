@@ -543,7 +543,7 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
         else:
             messagebox.showinfo('Weak Passphrase', 'Passphrase you have entered does not meet the requirements.', parent=sym_passphrase_windows)
     else:
-        messagebox.showinfo('Empty Passphrase', 'Passphrase cannot be empty.', parent=sym_passphrase_windows)
+        messagebox.showinfo('Empty Passphrase', 'Passphrase should not be empty.', parent=sym_passphrase_windows)
 
 def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     newWindow.title("Passphrase for Symmetric Encryption")
@@ -616,7 +616,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                     messagebox.showinfo('Bad Passphrase', 
                                         f'Bad passphrase (try {error_count} out of 3)', parent=newWindow)
         else:
-            messagebox.showinfo('No Passphrase', 'Please enter your passphrase.', parent=newWindow)
+            messagebox.showinfo('No Passphrase', 'Passphrase should not be empty.', parent=newWindow)
     except FileNotFoundError:
         newWindow.destroy()
         messagebox.showerror("Error", "An error occurred while decrypting your files. Please check your pass storage and refresh the pass list.", parent=self)

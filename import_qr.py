@@ -50,46 +50,48 @@ def exit_scan(self, scanWindow, camera, scanned_values):
 def check_passp_and_import(self, final_json, passp_entry, passp_window):
     global error_count
     passp = passp_entry.get()
-    
-    try:
+    if passp:
         try:
-            decrypted_password_data = []
+            try:
+                decrypted_password_data = []
+                for i in range(0, len(final_json)):
+                    decoded_data = base64.b64decode(final_json[i]["cipher"])
+                    command1 = ["gpg", "-d", "--quiet", "--pinentry-mode=loopback", f"--passphrase={passp}"]
+                    out1 = subprocess.check_output(command1, input=decoded_data, universal_newlines=False, shell=False)
+                    decrypted_password_data.append(out1)
+
+            except subprocess.CalledProcessError:
+            
+                    global error_count
+                    error_count -= 1
+                    if error_count <= 0:
+                        messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.', parent=passp_window)
+                        passp_window.destroy()
+                        main_window.App.enable_button(self)
+                        error_count = 3
+                    else:
+                        messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)', parent=passp_window)
+
+            with open(f'{password_store_gpg_id}', 'r') as id_file:
+                gpg_key = str(id_file.read()).strip()
+            
             for i in range(0, len(final_json)):
-                decoded_data = base64.b64decode(final_json[i]["cipher"])
-                command1 = ["gpg", "-d", "--quiet", "--pinentry-mode=loopback", f"--passphrase={passp}"]
-                out1 = subprocess.check_output(command1, input=decoded_data, universal_newlines=False, shell=False)
-                decrypted_password_data.append(out1)
+                    os.makedirs(os.path.dirname(f'{password_store}/{final_json[i][f"File{i}"]}'), exist_ok=True)
+                    command2 = ["gpg", "--batch", "--quiet", "--yes", "--encrypt", "-r", gpg_key, "-o" ,f"{password_store}/{final_json[i][f'File{i}']}.gpg"]
+                    out2 = subprocess.check_output(command2, input=decrypted_password_data[i], universal_newlines=False, shell=False)
 
-        except subprocess.CalledProcessError:
-        
-                global error_count
-                error_count -= 1
-                if error_count <= 0:
-                    messagebox.showinfo('Error Asymmetric Decrypt', 'Files could not be decrypted due to the incorrect passphrase.', parent=passp_window)
-                    passp_window.destroy()
-                    main_window.App.enable_button(self)
-                    error_count = 3
-                else:
-                    messagebox.showinfo('Bad Passphrase', f'Bad passphrase (try {error_count} out of 3)', parent=passp_window)
-
-        with open(f'{password_store_gpg_id}', 'r') as id_file:
-            gpg_key = str(id_file.read()).strip()
-        
-        for i in range(0, len(final_json)):
-                os.makedirs(os.path.dirname(f'{password_store}/{final_json[i][f"File{i}"]}'), exist_ok=True)
-                command2 = ["gpg", "--batch", "--quiet", "--yes", "--encrypt", "-r", gpg_key, "-o" ,f"{password_store}/{final_json[i][f'File{i}']}.gpg"]
-                out2 = subprocess.check_output(command2, input=decrypted_password_data[i], universal_newlines=False, shell=False)
-
-        decrypted_password_data.clear()
-        passp_window.destroy()
-        messagebox.showinfo('Success', 'Your passwords have been imported to the pass store successfully.', parent=self)
-        main_window.App.refresh(self)
-        main_window.App.enable_button(self)
-        
-    except IndexError:
-        pass
-    except UnboundLocalError:
-        pass
+            decrypted_password_data.clear()
+            passp_window.destroy()
+            messagebox.showinfo('Success', 'Your passwords have been imported to the pass store successfully.', parent=self)
+            main_window.App.refresh(self)
+            main_window.App.enable_button(self)
+            
+        except IndexError:
+            pass
+        except UnboundLocalError:
+            pass
+    else:
+        messagebox.showinfo('Invalid Passphrase', 'Passphrase should not be empty.', parent=passp_window)
 
 def get_passp(self, final_json, scanWindow, camera):
     camera.release()        
@@ -645,7 +647,7 @@ def gen_gpg_pass_start(self):
                 gen_gpg_pass_win(self)
 
 #References
-#Lines between 219-223 and 385-389 are inspired by: https://stackoverflow.com/questions/66956444/live-video-feed-from-camera-to-tkinter-window-with-opencv
+#Lines between 221-225 and 387-391 are inspired by: https://stackoverflow.com/questions/66956444/live-video-feed-from-camera-to-tkinter-window-with-opencv
 #Lines 59-60 are inspired by: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. OGLOK is my username.
-#Lines 118, 199, 202, 204, 366, 369, 371, 541, 555, 578, 600, 621, 624 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.
+#Lines 120, 201, 204, 206, 368, 371, 373, 543, 557, 580, 602, 623, 626 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.
 #Lines 59-60 and 80-81 are inspired by: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
