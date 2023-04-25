@@ -646,4 +646,6 @@ def gen_gpg_pass_start(self):
 
 #References
 #Lines between 219-223 and 385-389 are inspired by: https://stackoverflow.com/questions/66956444/live-video-feed-from-camera-to-tkinter-window-with-opencv
-#Lines 118, 199, 202, 204, 366, 369, 371, 541, 555, 578, 600, 621, 624 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.
+#Lines 59-60 are inspired by: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. OGLOK is my username.
+#Lines 118, 199, 202, 204, 366, 369, 371, 541, 555, 578, 600, 621, 624 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.
+#Lines 59-60 and 80-81 are inspired by: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
