@@ -651,6 +651,6 @@ def asym_dec_window(self, pass_files, files):
 
 #References
 #set_grid function is inspired by: https://stackoverflow.com/questions/37921295/python-pil-image-make-3x3-grid-from-sequence-images
-#Lines 473, 500, 578, 646, and 649 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. OGLOK is my username.
-#Lines 425-426, 599-600 are implemented with the help of: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. OGLOK is my username.
+#Lines 473, 500, 578, 646, and 649 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
+#Lines 425-426, 599-600 are implemented with the help of: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
 #Moreover, Lines 425-426 and 599-600 are also inspired by: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
