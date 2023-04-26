@@ -216,7 +216,8 @@ def scan_qr_start(self):
                         pnt = i.polygon
                         points = np.array(pnt, np.int32)
                         points = points.reshape(-1,1,2)
-                        cv2.polylines(frame, [points], True, (255,0,255), 5)
+                        colour = 50,205,50
+                        cv2.polylines(frame, [points], True, colour, 5)
                     
                     frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                     image_update = ImageTk.PhotoImage(Image.fromarray(frame))
@@ -382,7 +383,8 @@ def shamir_scan_start(self):
                         pnt = i.polygon
                         points = np.array(pnt, np.int32)
                         points = points.reshape(-1,1,2)
-                        cv2.polylines(frame, [points], True, (50,205,50), 5)
+                        colour = 50,205,50
+                        cv2.polylines(frame, [points], True, colour, 5)
 
                     frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                     image_update = ImageTk.PhotoImage(Image.fromarray(frame))
@@ -647,7 +649,7 @@ def gen_gpg_pass_start(self):
                 gen_gpg_pass_win(self)
 
 #References
-#Lines between 221-225 and 387-391 are inspired by: https://stackoverflow.com/questions/66956444/live-video-feed-from-camera-to-tkinter-window-with-opencv
+#Lines 181, 221-225, 349, and 387-391 are inspired by: https://stackoverflow.com/a/67161773/21095082
 #Lines 59-60 are inspired by: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
 #Lines 120, 201, 204, 206, 368, 371, 373, 543, 557, 580, 602, 623, 626 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
 #Lines 59-60 and 80-81 are inspired by: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess

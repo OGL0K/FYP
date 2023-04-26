@@ -30,26 +30,26 @@ class App(customtkinter.CTk):
         self.resizable(False,False)
         self.protocol("WM_DELETE_WINDOW", self.quit_app)
 
-        self.sidebar_frame = customtkinter.CTkFrame(self, width=170, height=700, corner_radius=0)
-        self.sidebar_frame.place(x=0, y=0)
+        self.sidebar = customtkinter.CTkFrame(self, width=170, height=700, corner_radius=0)
+        self.sidebar.place(x=0, y=0)
 
-        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="PassQR", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.logo_label = customtkinter.CTkLabel(self.sidebar, text="PassQR", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.place(x=45, y=30)
 
         #Home Tab
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Home", command=self.home_page, fg_color="darkred", hover_color="#D2042D")
-        self.sidebar_button_1.place(x=15, y=80)
+        self.side_button1 = customtkinter.CTkButton(self.sidebar, text="Home", command=self.home_page, fg_color="darkred", hover_color="#D2042D")
+        self.side_button1.place(x=15, y=80)
 
         #Convert Tab
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Backup", command=self.backup_page, fg_color="darkred", hover_color="#D2042D")
-        self.sidebar_button_2.place(x=15, y=130)
+        self.side_button2 = customtkinter.CTkButton(self.sidebar, text="Backup", command=self.backup_page, fg_color="darkred", hover_color="#D2042D")
+        self.side_button2.place(x=15, y=130)
 
         #Import Tab
-        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, text="Recover", command=self.recover_page,  fg_color="darkred", hover_color="#D2042D")
-        self.sidebar_button_3.place(x=15, y=180)
+        self.side_button3 = customtkinter.CTkButton(self.sidebar, text="Recover", command=self.recover_page,  fg_color="darkred", hover_color="#D2042D")
+        self.side_button3.place(x=15, y=180)
 
         #Exit Button
-        self.exit_button = customtkinter.CTkButton(self.sidebar_frame, text="Exit", command=self.quit_app,  fg_color="darkred", hover_color="#D2042D")
+        self.exit_button = customtkinter.CTkButton(self.sidebar, text="Exit", command=self.quit_app,  fg_color="darkred", hover_color="#D2042D")
         self.exit_button.place(x=15, y=350)
 
         #Default Home Label
@@ -244,9 +244,9 @@ class App(customtkinter.CTk):
         self.refresh_files.place_forget()
 
     def disable_button(self):
-        self.sidebar_button_1.configure(state= customtkinter.DISABLED)
-        self.sidebar_button_2.configure(state= customtkinter.DISABLED)
-        self.sidebar_button_3.configure(state= customtkinter.DISABLED)
+        self.side_button1.configure(state= customtkinter.DISABLED)
+        self.side_button2.configure(state= customtkinter.DISABLED)
+        self.side_button3.configure(state= customtkinter.DISABLED)
         self.convert.configure(state= customtkinter.DISABLED)
         self.convertall.configure(state= customtkinter.DISABLED)
         self.refresh_files.configure(state= customtkinter.DISABLED)
@@ -255,9 +255,9 @@ class App(customtkinter.CTk):
         self.gen_gpg_pass_button.configure(state= customtkinter.DISABLED)
 
     def enable_button(self):
-        self.sidebar_button_1.configure(state= customtkinter.NORMAL)
-        self.sidebar_button_2.configure(state= customtkinter.NORMAL)
-        self.sidebar_button_3.configure(state= customtkinter.NORMAL)
+        self.side_button1.configure(state= customtkinter.NORMAL)
+        self.side_button2.configure(state= customtkinter.NORMAL)
+        self.side_button3.configure(state= customtkinter.NORMAL)
         self.convert.configure(state= customtkinter.NORMAL)
         self.convertall.configure(state= customtkinter.NORMAL)
         self.refresh_files.configure(state= customtkinter.NORMAL)
