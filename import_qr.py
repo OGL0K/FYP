@@ -649,6 +649,7 @@ def gen_gpg_pass_start(self):
                 gen_gpg_pass_win(self)
 
 #References
+#Lines 163-165, 212-220, 331-333, and 379-387 are inspired by: https://github.com/murtazahassan/OpenCV-Python-Tutorials-and-Projects/blob/master/Intermediate/QrCodeBarCode/QrBarTest.py
 #Lines 181, 221-225, 349, and 387-391 are inspired by: https://stackoverflow.com/a/67161773/21095082
 #Lines 59-60 are inspired by: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
 #Lines 120, 201, 204, 206, 368, 371, 373, 543, 557, 580, 602, 623, 626 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.

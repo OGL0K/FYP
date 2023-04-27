@@ -93,10 +93,10 @@ def combine_img(copy):
         qr_image_list = []
         qr_image_list2 = []
         
-        for path, subdirs, files in os.walk(qr_path):
+        for main_path, sub_directories, files in os.walk(qr_path):
             for name in files:
                 if name.endswith('.png'):
-                    joined = os.path.join(path, name)
+                    joined = os.path.join(main_path, name)
                     qr_list.append(joined)
 
         for x in natsorted(qr_list):
@@ -580,10 +580,10 @@ def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, la
 def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     try:
         check_files = []
-        for path, subdirs, files2 in os.walk(f"{pwd}/.password-store"):
-            for name in files2:
+        for main_path, sub_directories, files in os.walk(f"{pwd}/.password-store"):
+            for name in files:
                 if name.endswith('.gpg'):
-                    check_file = os.path.join(path, name)
+                    check_file = os.path.join(main_path, name)
                     check_file2 = check_file.replace(".gpg", "")
                     check_files.append(check_file2)
                     

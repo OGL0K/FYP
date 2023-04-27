@@ -76,10 +76,10 @@ class App(customtkinter.CTk):
         #Password Listbox
         self.passfiles_lb = tk.Listbox(self, selectmode=tk.MULTIPLE, height=9)
         self.subdir_file_arr = []
-        for path, subdirs, files in os.walk(f"{pwd}/.password-store"):
-            for name in files:
-                if name.endswith('.gpg'):
-                    self.joined = os.path.join(path, name)
+        for main_path, sub_directories, files in os.walk(f"{pwd}/.password-store"):
+            for file_name in files:
+                if file_name.endswith('.gpg'):
+                    self.joined = os.path.join(main_path, file_name)
                     self.joined_2 = self.joined.replace(f"{pwd}/.password-store/", "")
                     self.final_joined2 = self.joined_2.replace(".gpg", "")
                     self.subdir_file_arr.append(self.final_joined2)
@@ -131,9 +131,8 @@ class App(customtkinter.CTk):
     def convertAllFiles(self):
         if os.path.exists(f"{pwd}/.password-store"):
             global gpg_id_count
-            check_files = []
-            for path, subdirs, files2 in os.walk(f"{pwd}/.password-store"):
-                for name in files2:
+            for main_path, sub_directories, files in os.walk(f"{pwd}/.password-store"):
+                for name in files:
                     if name.endswith('.gpg-id'):
                         gpg_id_count +=1
             
@@ -170,10 +169,10 @@ class App(customtkinter.CTk):
     def refresh(self):
         if os.path.exists(f"{pwd}/.password-store"):
             self.subdir_file_arr = []
-            for path, subdirs, files in os.walk(f"{pwd}/.password-store"):
+            for main_path, sub_directories, files in os.walk(f"{pwd}/.password-store"):
                 for name in files:
                     if name.endswith('.gpg'):
-                        self.joined = os.path.join(path, name)
+                        self.joined = os.path.join(main_path, name)
                         self.joined_2 = self.joined.replace(f"{pwd}/.password-store/", "")
                         self.final_joined2 = self.joined_2.replace(".gpg", "")
                         self.subdir_file_arr.append(self.final_joined2)
