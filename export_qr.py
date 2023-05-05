@@ -418,28 +418,28 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
             kill_command = ["gpgconf", "--kill", "gpg-agent"]
             kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
             
-def sym_enc(passp, decrypted_password_data, files, copy, threshold, copy_windows, self):
+def sym_enc(passp, decrypted_password_data, pass_name, copy, threshold, copy_windows, self):
     copy_windows.destroy()
     password_list = []
-    for y in range(0, len(files)):
+    for y in range(0, len(pass_name)):
         command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
         out2 = subprocess.check_output(command2, input=decrypted_password_data[y], universal_newlines=False, shell=False)
         encode = base64.b64encode(out2)
 
-        password = {f'File{y}':files[y],
+        password = {f'File{y}':pass_name[y],
                     'cipher': encode.decode('ascii')+"\n"}
 
         password_list.append(password)
     
     qr_convert(password_list, copy, passp, threshold, self)
 
-def get_threshold_number(re_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3):
+def get_threshold_number(re_passp, decrypt_data, pass_name, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3):
     copy_number = spin_box.get()
     
     if copy_number == "1":
         copy_windows.destroy()
         threshold_number = 0
-        sym_enc(re_passp, decrypt_data, files, copy_number, threshold_number, copy_windows, self)
+        sym_enc(re_passp, decrypt_data, pass_name, copy_number, threshold_number, copy_windows, self)
 
     else:
         copy_label.destroy()
@@ -470,9 +470,9 @@ def get_threshold_number(re_passp, decrypt_data, files, copy_windows, label2, la
     
         enterbutton.place(x=200,y=125)
         exit_button.place(x=275,y=125)
-        enterbutton.configure(command=lambda: sym_enc(re_passp, decrypt_data, files, copy_number, spin_box.get(), copy_windows, self))
+        enterbutton.configure(command=lambda: sym_enc(re_passp, decrypt_data, pass_name, copy_number, spin_box.get(), copy_windows, self))
 
-def set_copy_number(sym_passp, decrypt_data, files, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
+def set_copy_number(sym_passp, decrypt_data, pass_name, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
     copy_windows.geometry("600x190")
     copy_windows.title("Number of Copies")
     re_passp_entry.destroy()
@@ -497,14 +497,14 @@ def set_copy_number(sym_passp, decrypt_data, files, copy_windows, re_passp_entry
     spin_box = tk.Spinbox(copy_windows, from_=1, to=10, textvariable=current_value, width=3, state = 'readonly', wrap=True, bg="black")
     spin_box.place(x=150,y=140)
 
-    enterbutton.configure(command=lambda: get_threshold_number(sym_passp, decrypt_data, files, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3))
+    enterbutton.configure(command=lambda: get_threshold_number(sym_passp, decrypt_data, pass_name, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3))
     enterbutton.place(x=210,y=140)
 
     exit_button.place(x=285,y=140)
 
-def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button):
+def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, pass_name, label2, label3, label4, enterbutton, self, exit_button):
     if sym_passp == re_passp_entry.get():
-        set_copy_number(sym_passp, decrypt_data, files, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
+        set_copy_number(sym_passp, decrypt_data, pass_name, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
 
     else:
         global re_passp_error_count
@@ -519,7 +519,7 @@ def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data
         else:
             messagebox.showinfo('Bad Passphrase', f'Passphrases do not match (try {re_passp_error_count} out of 3)', parent=sym_passphrase_windows)
 
-def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, files, self, exit_button, label5, label6):
+def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, pass_name, self, exit_button, label5, label6):
     global sym_passp
 
     special_characters = "!@#$%^&*()-+?_=,<>/"
@@ -538,14 +538,14 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
             re_passp_entry.place(x=130,y=65)
             enterbutton.place(x=50,y=100)
             exit_button.place(x=125,y=100)
-            enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, files, label2, label3, label4, enterbutton, self, exit_button))
+            enterbutton.configure(command=lambda: check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, pass_name, label2, label3, label4, enterbutton, self, exit_button))
 
         else:
             messagebox.showinfo('Weak Passphrase', 'Passphrase you have entered does not meet the requirements.', parent=sym_passphrase_windows)
     else:
         messagebox.showinfo('Empty Passphrase', 'Passphrase should not be empty.', parent=sym_passphrase_windows)
 
-def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
+def sym_enc_window(decrypt_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     newWindow.title("Passphrase for Symmetric Encryption")
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
     newWindow.geometry("500x200")
@@ -575,9 +575,9 @@ def sym_enc_window(decrypt_data, files, newWindow, passp_entry, enter_button, la
 
     enter_button.place(x=50,y=160)
     exit_button.place(x=125,y=160)
-    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, files, self, exit_button, label5, label6))
+    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, pass_name, self, exit_button, label5, label6))
 
-def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self):
+def get_entry(newWindow, passp, pass_files, pass_name, passp_entry, enter_button, label2, label3, label4, exit_button, self):
     try:
         check_files = []
         for main_path, sub_directories, files in os.walk(f"{pwd}/.password-store"):
@@ -599,7 +599,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
                     command1 = ["gpg", "-d", "--quiet", "--yes", "--pinentry-mode=loopback", f"--passphrase={passp}", f'{pass_files[x]}.gpg']
                     out = subprocess.check_output(command1, universal_newlines=False, shell=False)
                     decrypted_data.append(out)
-                sym_enc_window(decrypted_data, files, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self)
+                sym_enc_window(decrypted_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self)
 
             except subprocess.CalledProcessError:
                 global error_count
@@ -624,7 +624,7 @@ def get_entry(newWindow, passp, pass_files, files, passp_entry, enter_button, la
         re_passp_error_count = 3
         main_window.App.enable_button(self)
 
-def asym_dec_window(self, pass_files, files):
+def asym_dec_window(self, pass_files, pass_name):
     newWindow = customtkinter.CTkToplevel(self)
     newWindow.title("Passphrase for Asymmetric Decryption")
     newWindow.geometry("500x150")
@@ -643,14 +643,14 @@ def asym_dec_window(self, pass_files, files):
     passp_entry = customtkinter.CTkEntry(newWindow, show="*")
     passp_entry.place(x=130,y=65)
 
-    enter_button = customtkinter.CTkButton(newWindow, text='Enter', command=lambda: get_entry(newWindow, passp_entry.get(), pass_files, files, passp_entry, enter_button, label2, label3, label4, exit_button, self), fg_color="darkred", hover_color="#D2042D", width=60)
+    enter_button = customtkinter.CTkButton(newWindow, text='Enter', command=lambda: get_entry(newWindow, passp_entry.get(), pass_files, pass_name, passp_entry, enter_button, label2, label3, label4, exit_button, self), fg_color="darkred", hover_color="#D2042D", width=60)
     enter_button.place(x=50,y=100)
 
     exit_button = customtkinter.CTkButton(newWindow, text="Cancel Backup", command=lambda: cancel_convert(self, newWindow), fg_color="darkred", hover_color="#D2042D")
     exit_button.place(x=125,y=100)
 
 #References
-#set_grid function is inspired by: https://stackoverflow.com/questions/37921295/python-pil-image-make-3x3-grid-from-sequence-images
+#set_grid function is from: https://stackoverflow.com/questions/37921295/python-pil-image-make-3x3-grid-from-sequence-images
 #Lines 473, 500, 578, 646, and 649 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
 #Lines 425-426, 599-600 are implemented with the help of: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
-#Moreover, Lines 425-426 and 599-600 are also inspired by: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
+#Moreover, Lines 425-426 and 599-600 are also from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess

@@ -160,8 +160,10 @@ class App(customtkinter.CTk):
 
                         for val in self.files:
                             self.pass_files.append(f'{pwd}/.password-store/{val}')
-                        
+
                         export_qr.asym_dec_window(self, self.pass_files , self.files)
+                        gpg_id_count = 0
+                    else:
                         gpg_id_count = 0
         else:
             messagebox.showinfo('No pass store', 'Pass store could not be found on your machine.', parent=self)
