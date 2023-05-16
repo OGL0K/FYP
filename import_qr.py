@@ -534,6 +534,7 @@ def get_passphrase(self, input_label, input_label2, input_entry3, email, enter_b
 
     else:
         if any(c in special_characters or c in numbers for c in passphrase) and any(c in alphabet.upper() or c in alphabet for c in passphrase) and len(passphrase) >=8:
+            gen_gpg_pass_win.title("Passphrase Re-Entry for GPG Key & Pass Storage Generation")
             gen_gpg_pass_win.geometry("420x150")
             input_label.configure(text="Please re-enter your new passphrase")
             input_label2.place(x=50,y=63)
@@ -548,6 +549,7 @@ def get_passphrase(self, input_label, input_label2, input_entry3, email, enter_b
 
         else:
             if messagebox.askyesno('Weak Passphrase', 'Your passphrase is not considered strong. Do you wish to use this one?', parent=gen_gpg_pass_win):
+                gen_gpg_pass_win.title("Passphrase Entry for GPG Key & Pass Storage Generation")
                 gen_gpg_pass_win.geometry("420x150")
                 input_label.configure(text="Please re-enter your new passphrase")
                 input_label2.place(x=50,y=63)
@@ -564,6 +566,7 @@ def get_email(self, input_label, input_label2, input_entry2, enter_button, gen_g
     email = input_entry2.get()
     regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]{1,}\b"
     if re.fullmatch(regex, email):
+        gen_gpg_pass_win.title("Passphrase Entry for GPG Key & Pass Storage Generation")
         gen_gpg_pass_win.geometry("500x200")
         input_entry2.destroy()
         input_label.configure(text="Please create a passphrase.")
@@ -595,6 +598,7 @@ def get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg
     elif name.isascii() == False:
         messagebox.showinfo('Invalid Name', 'Name should not contain non-ascii characters.', parent=gen_gpg_pass_win)
     else:
+        gen_gpg_pass_win.title("E-Mail Entry for GPG Key & Pass Storage Generation")
         instructions_label.configure(text="GPG Key Generation - E-Mail")
         input_entry.destroy()
         input_label.configure(text="Please put your email address.")
@@ -605,7 +609,7 @@ def get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg
 
 def gen_gpg_pass_win(self):
     gen_gpg_pass_win = customtkinter.CTkToplevel(self)
-    gen_gpg_pass_win.title("Generate GPG Key & Pass Storage")
+    gen_gpg_pass_win.title("Name Entry for GPG Key & Pass Storage Generation")
     gen_gpg_pass_win.geometry("420x150")
     gen_gpg_pass_win.resizable(False,False)
     gen_gpg_pass_win.protocol("WM_DELETE_WINDOW", lambda: exit_gen_gpg_passp(self, gen_gpg_pass_win))

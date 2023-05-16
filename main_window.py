@@ -58,20 +58,14 @@ class App(customtkinter.CTk):
 
         self.label2 = customtkinter.CTkLabel(self, text="Password List", font=customtkinter.CTkFont(size=13, weight="bold"))
 
-        self.home_label1 = customtkinter.CTkLabel(self, text="PassQR has been developed to backup and recover\npasswords securely and easlily that is located on pass.")
-        self.home_label1.place(x=210, y=60)
+        self.home_label1 = customtkinter.CTkLabel(self, text="PassQR is an application to backup and recover\nyour passwords securely that is located on pass.")
+        self.home_label1.place(x=220, y=60)
 
-        self.home_label2 = customtkinter.CTkLabel(self, text="Backup", font=customtkinter.CTkFont(size=13, weight="bold"))
-        self.home_label2.place(x=340, y=95)
+        self.home_label2 = customtkinter.CTkLabel(self, text="PassQR simply converts your passwords into QR\ncode backups. You can print your backups and\nstore them physically which is harder for hackers to\nsteal your passwords. It is very easy to backup\nyour passwords, just follow the instructions. You\ncan refresh your password list if you have made\nchanges in your pass storage.")
+        self.home_label2.place(x=210, y=110)
 
-        self.home_label3 = customtkinter.CTkLabel(self, text="Backing up your passwords is really simple. You can\n backup your passwords however you like. It can be\n backed up all together or you can backup passwords\n by choosing from the list. If you made any changes in\n your pass repository, you can hit refresh button to\n refresh your pass list.")
-        self.home_label3.place(x=210, y=120)
-
-        self.home_label4 = customtkinter.CTkLabel(self, text="Recover", font=customtkinter.CTkFont(size=13, weight="bold"))
-        self.home_label4.place(x=340, y=220)
-
-        self.home_label5 = customtkinter.CTkLabel(self, text="To recover your passwords, firstly scan your QR\n codes. After a successful scan, you have to provide\n your passphrase that you have generated in backup\n process. Once that is done, you are good to go! If\n you forget your passphrase and you have more than\n one copy, do not worry. You can use retreive your\n passphrase by scanning your first QR code of your copies.\n Also, you can generate a new GPG key and pass storage.")
-        self.home_label5.place(x=190, y=245)
+        self.home_label3 = customtkinter.CTkLabel(self, text="Recovering your passwords is really simple, firstly\nscan your QR codes. After a successful scan, you\nneed to provide your passphrase that you have\ngenerated in backup process. Once that is done, you are\ngood to go! If you forget your passphrase and you have\nmore than one copy, do not worry. You can use retreive\nyour passphrase by scanning your first QR code of your copies.\nAlso, you can generate a new GPG key and pass storage.")
+        self.home_label3.place(x=180, y=235)
 
         #Password Listbox
         self.passfiles_lb = tk.Listbox(self, selectmode=tk.MULTIPLE, height=9)
@@ -192,11 +186,9 @@ class App(customtkinter.CTk):
     def home_page(self):
         self.label1.configure(text="Home")
 
-        self.home_label1.place(x=210, y=60)
-        self.home_label2.place(x=340, y=95)
-        self.home_label3.place(x=210, y=120)
-        self.home_label4.place(x=340, y=220)
-        self.home_label5.place(x=190, y=245)
+        self.home_label1.place(x=220, y=60)
+        self.home_label2.place(x=210, y=110)
+        self.home_label3.place(x=180, y=235)
 
         self.label2.place_forget()
         self.passfiles_lb.place_forget()
@@ -214,8 +206,6 @@ class App(customtkinter.CTk):
         self.home_label1.place_forget()
         self.home_label2.place_forget()
         self.home_label3.place_forget()
-        self.home_label4.place_forget()
-        self.home_label5.place_forget()
         self.scan_button.place_forget()
         self.shamir_button.place_forget()
         self.gen_gpg_pass_button.place_forget()
@@ -236,8 +226,6 @@ class App(customtkinter.CTk):
         self.home_label1.place_forget()
         self.home_label2.place_forget()
         self.home_label3.place_forget()
-        self.home_label4.place_forget()
-        self.home_label5.place_forget()
         self.label2.place_forget()
         self.passfiles_lb.place_forget()
         self.convert.place_forget()

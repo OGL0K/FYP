@@ -528,8 +528,10 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
     sym_passp = sym_passp_entry.get()
     if sym_passp:
         if any(c in special_characters or c in numbers for c in sym_passp) and any(c in alphabet.upper() or c in alphabet for c in sym_passp) and len(sym_passp) >=8:
-            sym_passphrase_windows.geometry("500x150")
+            sym_passphrase_windows.title("New Passphrase Re-Entry for Symmetric Encryption")
+            sym_passphrase_windows.geometry("530x150")
             sym_passp_entry.destroy()
+            label2.configure(text="New Passphrase Re-Entry for Symmetric Encryption")
             label3.configure(text="Please re-enter your new passphrase")
             label4.place(x=50,y=65)
             label5.destroy()
@@ -546,14 +548,14 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
         messagebox.showinfo('Empty Passphrase', 'Passphrase should not be empty.', parent=sym_passphrase_windows)
 
 def sym_enc_window(decrypt_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
-    newWindow.title("Passphrase for Symmetric Encryption")
+    newWindow.title("New Passphrase Entry for Symmetric Encryption")
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
-    newWindow.geometry("500x200")
+    newWindow.geometry("530x200")
 
     passp_entry.destroy()
 
-    label2.configure(text="Passphrase for Symmetric Encryption")
-    label3.configure(text= "Please create a new passphrase for encryption.")
+    label2.configure(text="New Passphrase Entry for Symmetric Encryption")
+    label3.configure(text= "Please create a new passphrase to encrypt your passwords.")
     label4.place(x=50,y=120)
 
     label5 = customtkinter.CTkLabel(newWindow, text ="The passphrase you have entered should be between 8 - 30 characters")
@@ -626,15 +628,15 @@ def get_entry(newWindow, passp, pass_files, pass_name, passp_entry, enter_button
 
 def asym_dec_window(self, pass_files, pass_name):
     newWindow = customtkinter.CTkToplevel(self)
-    newWindow.title("Passphrase for Asymmetric Decryption")
+    newWindow.title("Passphrase Entry for Asymmetric Decryption")
     newWindow.geometry("500x150")
     newWindow.resizable(False,False)
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
 
-    label2 = customtkinter.CTkLabel(newWindow, text="Passphrase for Asymmetric Decryption", font=customtkinter.CTkFont(size=20, weight="bold"))
+    label2 = customtkinter.CTkLabel(newWindow, text="Passphrase Entry for Asymmetric Decryption", font=customtkinter.CTkFont(size=20, weight="bold"))
     label2.place(x=50,y=10)
 
-    label3 = customtkinter.CTkLabel(newWindow,text ="Please put your passphrase for decryption.")
+    label3 = customtkinter.CTkLabel(newWindow,text ="Please enter your passphrase to decrypt your passwords.")
     label3.place(x=50,y=35)
 
     label4 = customtkinter.CTkLabel(newWindow,text ="Passphrase:")
