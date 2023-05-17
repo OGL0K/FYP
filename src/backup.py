@@ -231,7 +231,7 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
             main_window.App.enable_button(self)
             messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
             kill_command = ["gpgconf", "--kill", "gpg-agent"]
-            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
 
         else:
             passp = passp.encode('latin-1')
@@ -285,7 +285,7 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
             messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
 
             kill_command = ["gpgconf", "--kill", "gpg-agent"]
-            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
 
     else:
         if os.path.exists(final_qr_path):
@@ -334,7 +334,7 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
             messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
 
             kill_command = ["gpgconf", "--kill", "gpg-agent"]
-            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
 
         else:
             global replay
@@ -416,14 +416,14 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
             messagebox.showinfo('Success', 'Your passwords are backed up into QR code successfully. The QR codes are stored in "Documents/PassQR". For your security, please delete your QR codes after you printed them.', parent=self)
 
             kill_command = ["gpgconf", "--kill", "gpg-agent"]
-            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
+            kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
             
 def sym_enc(passp, decrypted_password_data, pass_name, copy, threshold, copy_windows, self):
     copy_windows.destroy()
     password_list = []
     for y in range(0, len(pass_name)):
         command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
-        out2 = subprocess.check_output(command2, input=decrypted_password_data[y], universal_newlines=False, shell=False)
+        out2 = subprocess.check_output(command2, input=decrypted_password_data[y], universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
         encode = base64.b64encode(out2)
 
         password = {f'File{y}':pass_name[y],
@@ -599,7 +599,7 @@ def get_entry(newWindow, passp, pass_files, pass_name, passp_entry, enter_button
             try:
                 for x in range(0, len(pass_files)):
                     command1 = ["gpg", "-d", "--quiet", "--yes", "--pinentry-mode=loopback", f"--passphrase={passp}", f'{pass_files[x]}.gpg']
-                    out = subprocess.check_output(command1, universal_newlines=False, shell=False)
+                    out = subprocess.check_output(command1, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
                     decrypted_data.append(out)
                 sym_enc_window(decrypted_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self)
 

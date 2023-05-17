@@ -3,8 +3,8 @@ import subprocess
 import customtkinter
 import tkinter as tk
 
-import export_qr
-import import_qr
+import backup
+import recover
 from tkinter import messagebox
 
 gpg_id_count = 0
@@ -91,13 +91,13 @@ class App(customtkinter.CTk):
         self.refresh_files = customtkinter.CTkButton(self, text="Refresh List", command=self.refresh, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Scan QR Button
-        self.scan_button = customtkinter.CTkButton(self, text='Recover Passwords', command=lambda:import_qr.scan_qr_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
+        self.scan_button = customtkinter.CTkButton(self, text='Recover Passwords', command=lambda:recover.scan_qr_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
 
         #Retreive Passphrase with Shamir Button
-        self.shamir_button = customtkinter.CTkButton(self, text='Retrieve Passphrase', command=lambda:import_qr.shamir_scan_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
+        self.shamir_button = customtkinter.CTkButton(self, text='Retrieve Passphrase', command=lambda:recover.shamir_scan_start(self), fg_color="darkred", hover_color="#D2042D",  width=225)
 
         #Generate New GPG Key and Pass Storage Button
-        self.gen_gpg_pass_button = customtkinter.CTkButton(self, text='Generate GPG Key & Pass Storage', command=lambda:import_qr.gen_gpg_pass_start(self), fg_color="darkred", hover_color="#D2042D",  width=185)
+        self.gen_gpg_pass_button = customtkinter.CTkButton(self, text='Generate GPG Key & Pass Storage', command=lambda:recover.gen_gpg_pass_start(self), fg_color="darkred", hover_color="#D2042D",  width=185)
 
     def convertFiles(self):
         self.files = []
@@ -120,7 +120,7 @@ class App(customtkinter.CTk):
                 for val in self.files:
                     self.pass_files.append(f'{pwd}/.password-store/{val}')
                 
-                export_qr.asym_dec_window(self, self.pass_files , self.files)
+                backup.asym_dec_window(self, self.pass_files , self.files)
 
     def convertAllFiles(self):
         if os.path.exists(f"{pwd}/.password-store"):
@@ -155,7 +155,7 @@ class App(customtkinter.CTk):
                         for val in self.files:
                             self.pass_files.append(f'{pwd}/.password-store/{val}')
 
-                        export_qr.asym_dec_window(self, self.pass_files , self.files)
+                        backup.asym_dec_window(self, self.pass_files , self.files)
                         gpg_id_count = 0
                     else:
                         gpg_id_count = 0
