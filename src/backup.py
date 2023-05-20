@@ -208,7 +208,7 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
             os.mkdir(final_qr_path)
 
         if int(copy) == 1:
-            qr_data = { 'Packet_Number': '1', 
+            qr_data = { 'Packet_Number': 1, 
                         'QR-Name': 'QR-Code1', 
                         'Data': pass_data  }
             

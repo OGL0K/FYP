@@ -156,6 +156,10 @@ def evaluate_packets(self, scanWindow, camera, scanned_values):
 
     except ValueError:
         messagebox.showinfo('Error', 'There was a problem while processing your data. Please check the QR codes you have scanned.', parent=scanWindow)
+    
+    except KeyError:
+        messagebox.showinfo('Error', 'There was a problem while processing your data. Please check the QR codes you have scanned.', parent=scanWindow)
+
 
 def delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values):
     if len(scanned_values) == 0:
@@ -288,6 +292,11 @@ def scan_qr_start(self):
                     time.sleep(1.5)
 
                 except KeyError:
+                    status_label.configure(text=f"Error: Invalid QR Code has been scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
+                    status_label.place(x=20, y=13)
+                    time.sleep(1.5)
+                
+                except UnicodeDecodeError:
                     status_label.configure(text=f"Error: Invalid QR Code has been scanned.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
                     status_label.place(x=20, y=13)
                     time.sleep(1.5)
