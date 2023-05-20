@@ -445,7 +445,7 @@ def get_threshold_number(re_passp, decrypt_data, pass_name, copy_windows, label2
         copy_label.destroy()
         copy_label2.destroy()
         copy_label3.destroy()
-        copy_windows.geometry("700x170")
+        copy_windows.geometry("700x185")
         
         label2.configure(text="Minimum Threshold")
 
@@ -453,23 +453,23 @@ def get_threshold_number(re_passp, decrypt_data, pass_name, copy_windows, label2
         label3.place(x=50, y=35)
 
         label3_ct1 = customtkinter.CTkLabel(copy_windows, text="symmetric encryption by combining the first QR code of each copies.")
-        label3_ct1.place(x=50, y=55)
+        label3_ct1.place(x=50, y=58)
 
         label3_ct2 = customtkinter.CTkLabel(copy_windows, text="Please select a minimum threshold. (Min:2)")
-        label3_ct2.place(x=50, y=95)
+        label3_ct2.place(x=50, y=105)
 
         label3_ct3 = customtkinter.CTkLabel(copy_windows, text="Minimum threshold is a minimum number of QR codes that is needed to retreive your passphrase.")
-        label3_ct3.place(x=50, y=75)
+        label3_ct3.place(x=50, y=81)
 
         label4.configure(text="Treshold:")
-        label4.place(x=50, y=125)
+        label4.place(x=50, y=140)
 
         current_value = tk.StringVar(value=copy_number)
         spin_box.config(from_=2, to=copy_number, textvariable=current_value)
-        spin_box.place(x=125,y=125)
+        spin_box.place(x=125,y=140)
     
-        enterbutton.place(x=200,y=125)
-        exit_button.place(x=275,y=125)
+        enterbutton.place(x=200,y=140)
+        exit_button.place(x=275,y=140)
         enterbutton.configure(command=lambda: sym_enc(re_passp, decrypt_data, pass_name, copy_number, spin_box.get(), copy_windows, self))
 
 def set_copy_number(sym_passp, decrypt_data, pass_name, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
@@ -529,7 +529,7 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
     if sym_passp:
         if any(c in special_characters or c in numbers for c in sym_passp) and any(c in alphabet.upper() or c in alphabet for c in sym_passp) and len(sym_passp) >=8:
             sym_passphrase_windows.title("New Passphrase Re-Entry for Symmetric Encryption")
-            sym_passphrase_windows.geometry("530x150")
+            sym_passphrase_windows.geometry("560x150")
             sym_passp_entry.destroy()
             label2.configure(text="New Passphrase Re-Entry for Symmetric Encryption")
             label3.configure(text="Please re-enter your new passphrase")
@@ -629,7 +629,16 @@ def get_entry(newWindow, passp, pass_files, pass_name, passp_entry, enter_button
 def asym_dec_window(self, pass_files, pass_name):
     newWindow = customtkinter.CTkToplevel(self)
     newWindow.title("Passphrase Entry for Asymmetric Decryption")
-    newWindow.geometry("500x150")
+    width = 500
+    height = 150
+    
+    screen_width = self.winfo_screenwidth()
+    screen_height = self.winfo_screenheight()
+    
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+
+    newWindow.geometry('%dx%d+%d+%d' % (width, height, x, y))
     newWindow.resizable(False,False)
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
 

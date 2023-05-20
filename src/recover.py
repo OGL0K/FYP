@@ -101,7 +101,16 @@ def get_passp(self, final_json, scanWindow, camera):
 
     passp_window = customtkinter.CTkToplevel(self)
     passp_window.title("Passphrase for Symmetric Decryption")
-    passp_window.geometry("500x150")
+    width = 500
+    height = 150
+
+    screen_width = self.winfo_screenwidth()
+    screen_height = self.winfo_screenheight()
+
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+
+    passp_window.geometry('%dx%d+%d+%d' % (width, height, x, y))
     passp_window.resizable(False,False)
     passp_window.protocol("WM_DELETE_WINDOW", disable_close)
 
@@ -129,14 +138,23 @@ def evaluate_packets(self, scanWindow, camera, scanned_values):
             a = json.loads(sort_scanned_values[x])
             json_list1.append(a)
 
+        packet_number_list = []
         data_string = ""
         for index in range(0, len(json_list1)):
+            packet_number_list.append(json_list1[index]['Packet_Number'])
             data_string += json_list1[index]['Data']
 
+        for a, z in enumerate(packet_number_list, packet_number_list[0]):
+            if a!=z:
+                raise ValueError
+        
         final_json = json.loads(data_string)
         get_passp(self, final_json, scanWindow, camera)
     
     except json.decoder.JSONDecodeError:
+        messagebox.showinfo('Error', 'There was a problem while processing your data. Please check the QR codes you have scanned.', parent=scanWindow)
+
+    except ValueError:
         messagebox.showinfo('Error', 'There was a problem while processing your data. Please check the QR codes you have scanned.', parent=scanWindow)
 
 def delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values):
@@ -174,7 +192,16 @@ def scan_qr_start(self):
             main_window.App.disable_button(self)
             scanWindow = customtkinter.CTkToplevel(self)
             scanWindow.title("Recover Passwords")
-            scanWindow.geometry("870x550")
+            width = 870
+            height = 550
+
+            screen_width = self.winfo_screenwidth()
+            screen_height = self.winfo_screenheight()
+
+            x = (screen_width/2) - (width/2)
+            y = (screen_height/2) - (height/2)
+
+            scanWindow.geometry('%dx%d+%d+%d' % (width, height, x, y))
             scanWindow.resizable(False,False)
             scanWindow.protocol("WM_DELETE_WINDOW", disable_close)
 
@@ -342,7 +369,16 @@ def shamir_scan_start(self):
             main_window.App.disable_button(self)
             shamirWindow = customtkinter.CTkToplevel(self)
             shamirWindow.title("Retrieve Passphrase")
-            shamirWindow.geometry("870x550")
+            width = 870
+            height = 550
+
+            screen_width = self.winfo_screenwidth()
+            screen_height = self.winfo_screenheight()
+
+            x = (screen_width/2) - (width/2)
+            y = (screen_height/2) - (height/2)
+
+            shamirWindow.geometry('%dx%d+%d+%d' % (width, height, x, y))
             shamirWindow.resizable(False,False)
             shamirWindow.protocol("WM_DELETE_WINDOW", disable_close)
 
@@ -610,7 +646,7 @@ def get_name(self, input_label, input_label2, input_entry2, enter_button, gen_gp
 def gen_gpg_pass_name_win(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win, cancel_button, instructions_label):
     
     gen_gpg_pass_win.geometry("410x150")
-
+    gen_gpg_pass_win.title("Name Entry for GPG Key & Pass Storage Generation")
     instructions_label.configure(text="GPG Key Generation - Name")
     input_label.configure(text="Please put your real name.")
     input_label2.configure(text="Real Name:")
@@ -620,7 +656,6 @@ def gen_gpg_pass_name_win(self, input_label, input_label2, input_entry, enter_bu
     input_entry2.place(x=125,y=63)
 
     enter_button.configure(command=lambda: get_name(self, input_label, input_label2, input_entry2, enter_button, gen_gpg_pass_win, cancel_button, instructions_label), width=60, fg_color="darkred", hover_color="#D2042D")
-
 
 def check_auth(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win, cancel_button, instructions_label):
     passp = input_entry.get()
@@ -650,7 +685,16 @@ def check_auth(self, input_label, input_label2, input_entry, enter_button, gen_g
 def auth_gen_pass(self):
     gen_gpg_pass_win = customtkinter.CTkToplevel(self)
     gen_gpg_pass_win.title("Authentication for GPG Key & Pass Storage Generation")
-    gen_gpg_pass_win.geometry("580x150")
+    width = 580
+    height = 150
+    
+    screen_width = self.winfo_screenwidth()
+    screen_height = self.winfo_screenheight()
+    
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+
+    gen_gpg_pass_win.geometry('%dx%d+%d+%d' % (width, height, x, y))
     gen_gpg_pass_win.resizable(False,False)
     gen_gpg_pass_win.protocol("WM_DELETE_WINDOW", lambda: exit_gen_gpg_passp(self, gen_gpg_pass_win))
 
@@ -672,6 +716,40 @@ def auth_gen_pass(self):
     cancel_button = customtkinter.CTkButton(gen_gpg_pass_win, text="Cancel Generation", command=lambda: exit_gen_gpg_passp(self, gen_gpg_pass_win), fg_color="darkred", hover_color="#D2042D")
     cancel_button.place(x=125,y=100)
 
+def no_auth_gen_pass_start(self):
+    gen_gpg_pass_win = customtkinter.CTkToplevel(self)
+    gen_gpg_pass_win.title("Name Entry for GPG Key & Pass Storage Generation")
+    width = 410
+    height = 150
+    
+    screen_width = self.winfo_screenwidth()
+    screen_height = self.winfo_screenheight()
+    
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+
+    gen_gpg_pass_win.geometry('%dx%d+%d+%d' % (width, height, x, y))
+    gen_gpg_pass_win.resizable(False,False)
+    gen_gpg_pass_win.protocol("WM_DELETE_WINDOW", lambda: exit_gen_gpg_passp(self, gen_gpg_pass_win))
+
+    instructions_label = customtkinter.CTkLabel(gen_gpg_pass_win, text ="GPG Key Generation - Name", font=customtkinter.CTkFont(size=20, weight="bold"))
+    instructions_label.place(x=50,y=10)
+
+    input_label = customtkinter.CTkLabel(gen_gpg_pass_win, text ="Please put your real name.")
+    input_label.place(x=50,y=35)
+
+    input_label2 = customtkinter.CTkLabel(gen_gpg_pass_win, text ="Name:")
+    input_label2.place(x=50,y=63)
+
+    input_entry = customtkinter.CTkEntry(gen_gpg_pass_win)
+    input_entry.place(x=100,y=63)
+
+    enter_button = customtkinter.CTkButton(gen_gpg_pass_win, text="Enter", command=lambda: get_name(self, input_label, input_label2, input_entry, enter_button, gen_gpg_pass_win, cancel_button, instructions_label), width=60, fg_color="darkred", hover_color="#D2042D")
+    enter_button.place(x=50,y=100)
+
+    cancel_button = customtkinter.CTkButton(gen_gpg_pass_win, text="Cancel Generation", command=lambda: exit_gen_gpg_passp(self, gen_gpg_pass_win), fg_color="darkred", hover_color="#D2042D")
+    cancel_button.place(x=125,y=100)
+
 def gen_gpg_pass_start(self):
     #Check if pass exists in the machine.
     try:
@@ -683,14 +761,26 @@ def gen_gpg_pass_start(self):
         main_window.App.enable_button(self)
     
     except subprocess.CalledProcessError:
-        main_window.App.disable_button(self)
-        auth_gen_pass(self)
-    
-    else:
-        if os.path.exists(password_store):
+        if os.path.exists(password_store) == False or os.path.isfile(password_store_gpg_id) == False:
+            main_window.App.disable_button(self)
+            no_auth_gen_pass_start(self)
+        
+        elif os.path.exists(password_store):
             if messagebox.askyesno('Pass Storage Exists', 'There is an exiting pass storage located on your machine. Do you still wish to create a new one?', parent=self):
                 main_window.App.disable_button(self)
                 auth_gen_pass(self)
+        
+    
+    else:
+        if os.path.exists(password_store) == False or os.path.isfile(password_store_gpg_id) == False:
+            main_window.App.disable_button(self)
+            no_auth_gen_pass_start(self)
+        
+        elif os.path.exists(password_store):
+            if messagebox.askyesno('Pass Storage Exists', 'There is an exiting pass storage located on your machine. Do you still wish to create a new one?', parent=self):
+                main_window.App.disable_button(self)
+                auth_gen_pass(self)
+        
 
 #References
 #Lines 163-165, 212-220, 331-333, and 379-387 are from: https://github.com/murtazahassan/OpenCV-Python-Tutorials-and-Projects/blob/master/Intermediate/QrCodeBarCode/QrBarTest.py
