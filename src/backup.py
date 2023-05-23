@@ -493,10 +493,10 @@ def set_copy_number(password_list, copy_windows, re_passp_entry, label2, label3,
     exit_button.place(x=285,y=140)
 
 #Symmetric Encryption of Passwords            
-def sym_enc(sym_passp, decrypted_password_data, pass_name, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
+def sym_enc(passp, decrypted_password_data, pass_name, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
     password_list = []
     for y in range(0, len(pass_name)):
-        command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={sym_passp}"]
+        command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
         out2 = subprocess.check_output(command2, input=decrypted_password_data[y], universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
         encode = base64.b64encode(out2)
 
@@ -675,6 +675,6 @@ def asym_dec_window(self, pass_files, pass_name):
 
 #References
 #set_grid function is from: https://stackoverflow.com/questions/37921295/python-pil-image-make-3x3-grid-from-sequence-images
-#Lines 476, 503, 588, 587, 686, and 671 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
-#Lines 428-429, 609-610 are implemented with the help of: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
-#Moreover, Lines 428-429 and 609-610 are also from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
+#Lines 463, 490, 550, 589, 670, and 673 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
+#Lines 499-500, 611-612 are implemented with the help of: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
+#Moreover, Lines 499-500 and 611-612 are also from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
