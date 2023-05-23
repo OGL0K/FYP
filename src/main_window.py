@@ -7,8 +7,13 @@ import backup
 import recover
 from tkinter import messagebox
 
+#Global Variable
 gpg_id_count = 0
+
+#Path
 pwd = os.path.expanduser('~')
+
+#Application Apperance is based on the System's Appearance
 customtkinter.set_appearance_mode("System")
 
 class App(customtkinter.CTk):
@@ -40,11 +45,11 @@ class App(customtkinter.CTk):
         self.side_button1 = customtkinter.CTkButton(self.sidebar, text="Home", command=self.home_page, fg_color="darkred", hover_color="#D2042D")
         self.side_button1.place(x=15, y=80)
 
-        #Convert Tab
+        #Backup Tab
         self.side_button2 = customtkinter.CTkButton(self.sidebar, text="Backup", command=self.backup_page, fg_color="darkred", hover_color="#D2042D")
         self.side_button2.place(x=15, y=130)
 
-        #Import Tab
+        #Recovery Tab
         self.side_button3 = customtkinter.CTkButton(self.sidebar, text="Recover", command=self.recover_page,  fg_color="darkred", hover_color="#D2042D")
         self.side_button3.place(x=15, y=180)
 
@@ -81,11 +86,11 @@ class App(customtkinter.CTk):
         for x in range(0, len(self.subdir_file_arr)):
             self.passfiles_lb.insert(x, self.subdir_file_arr[x])
         
-        #Convert Button
-        self.convert = customtkinter.CTkButton(self, text="Backup Selected Passwords", command=self.convertFiles, fg_color="darkred", hover_color="#D2042D", width=185)
+        #Backup Button
+        self.backup = customtkinter.CTkButton(self, text="Backup Selected Passwords", command=self.backupPasswords, fg_color="darkred", hover_color="#D2042D", width=185)
 
-        #Convert All Button
-        self.convertall = customtkinter.CTkButton(self, text="Backup All Passwords", command=self.convertAllFiles, fg_color="darkred", hover_color="#D2042D", width=185)
+        #Backup All Button
+        self.backupall = customtkinter.CTkButton(self, text="Backup All Passwords", command=self.backupAllPasswords, fg_color="darkred", hover_color="#D2042D", width=185)
 
         #Refresh Button
         self.refresh_files = customtkinter.CTkButton(self, text="Refresh List", command=self.refresh, fg_color="darkred", hover_color="#D2042D", width=185)
@@ -99,7 +104,7 @@ class App(customtkinter.CTk):
         #Generate New GPG Key and Pass Storage Button
         self.gen_gpg_pass_button = customtkinter.CTkButton(self, text='Generate GPG Key & Pass Storage', command=lambda:recover.gen_gpg_pass_start(self), fg_color="darkred", hover_color="#D2042D",  width=185)
 
-    def convertFiles(self):
+    def backupPasswords(self):
         self.files = []
 
         self.cname = self.passfiles_lb.curselection()
@@ -111,7 +116,7 @@ class App(customtkinter.CTk):
         else:
             self.pass_files = []
             
-            if messagebox.askyesno('Convert', f'Are you sure to convert the selected file(s)?', parent=self):
+            if messagebox.askyesno('Backup', f'Are you sure to backup the selected password(s)?', parent=self):
                 
                 kill_command = ["gpgconf", "--kill", "gpg-agent"]
                 kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False)
@@ -122,7 +127,7 @@ class App(customtkinter.CTk):
                 
                 backup.asym_dec_window(self, self.pass_files , self.files)
 
-    def convertAllFiles(self):
+    def backupAllPasswords(self):
         if os.path.exists(f"{pwd}/.password-store"):
             global gpg_id_count
             for main_path, sub_directories, files in os.walk(f"{pwd}/.password-store"):
@@ -146,7 +151,7 @@ class App(customtkinter.CTk):
                 else:
                     self.pass_files = []
                     
-                    if messagebox.askyesno('Convert', f'Are you sure to convert all files?', parent=self):
+                    if messagebox.askyesno('Backup', f'Are you sure to backup all passwords?', parent=self):
                         
                         kill_command = ["gpgconf", "--kill", "gpg-agent"]
                         kill_out = subprocess.check_output(kill_command, universal_newlines=False)
@@ -192,8 +197,8 @@ class App(customtkinter.CTk):
 
         self.label2.place_forget()
         self.passfiles_lb.place_forget()
-        self.convert.place_forget()
-        self.convertall.place_forget()
+        self.backup.place_forget()
+        self.backupall.place_forget()
         self.refresh_files.place_forget()
         self.scan_button.place_forget()
         self.shamir_button.place_forget()
@@ -212,8 +217,8 @@ class App(customtkinter.CTk):
 
         self.label2.place(x=330, y=55)
         self.passfiles_lb.place(x=285, y=85)
-        self.convert.place(x=285, y=250)
-        self.convertall.place(x=285, y=290)
+        self.backup.place(x=285, y=250)
+        self.backupall.place(x=285, y=290)
         self.refresh_files.place(x=285, y=330)
 
     def recover_page(self):
@@ -228,16 +233,16 @@ class App(customtkinter.CTk):
         self.home_label3.place_forget()
         self.label2.place_forget()
         self.passfiles_lb.place_forget()
-        self.convert.place_forget()
-        self.convertall.place_forget()
+        self.backup.place_forget()
+        self.backupall.place_forget()
         self.refresh_files.place_forget()
 
     def disable_button(self):
         self.side_button1.configure(state= customtkinter.DISABLED)
         self.side_button2.configure(state= customtkinter.DISABLED)
         self.side_button3.configure(state= customtkinter.DISABLED)
-        self.convert.configure(state= customtkinter.DISABLED)
-        self.convertall.configure(state= customtkinter.DISABLED)
+        self.backup.configure(state= customtkinter.DISABLED)
+        self.backupall.configure(state= customtkinter.DISABLED)
         self.refresh_files.configure(state= customtkinter.DISABLED)
         self.scan_button.configure(state= customtkinter.DISABLED)
         self.shamir_button.configure(state= customtkinter.DISABLED)
@@ -247,8 +252,8 @@ class App(customtkinter.CTk):
         self.side_button1.configure(state= customtkinter.NORMAL)
         self.side_button2.configure(state= customtkinter.NORMAL)
         self.side_button3.configure(state= customtkinter.NORMAL)
-        self.convert.configure(state= customtkinter.NORMAL)
-        self.convertall.configure(state= customtkinter.NORMAL)
+        self.backup.configure(state= customtkinter.NORMAL)
+        self.backupall.configure(state= customtkinter.NORMAL)
         self.refresh_files.configure(state= customtkinter.NORMAL)
         self.scan_button.configure(state= customtkinter.NORMAL)
         self.shamir_button.configure(state= customtkinter.NORMAL)
@@ -269,4 +274,4 @@ if __name__ == "__main__":
     app.mainloop()
 
 #References
-#Lines 100, 103, and 106 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
+#Lines 94, 97, and 100 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.

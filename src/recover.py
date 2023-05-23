@@ -8,22 +8,23 @@ import shutil
 import base64
 import shamirs
 import subprocess
-import main_window
 import numpy as np
 import customtkinter
 import tkinter as tk
 import pyzbar.pyzbar as pyzbar
 
+import main_window
 from shamirs import share
 from natsort import natsorted
 from PIL import Image, ImageTk
 from tkinter import messagebox
 
-#Global Variables
+#Paths
 pwd = os.path.expanduser('~')
 password_store = f"{pwd}/.password-store"
 password_store_gpg_id = f"{pwd}/.password-store/.gpg-id"
 
+#Global Variables
 passphrase = ""
 error_count = 3
 re_passp_error_count = 3
@@ -47,6 +48,7 @@ def exit_scan(self, scanWindow, camera, scanned_values):
         scanWindow.destroy()
         main_window.App.enable_button(self)
 
+#Symmetric Decryption and Asymmetric Encryption
 def check_passp_and_import(self, final_json, passp_entry, passp_window):
     global error_count
     passp = passp_entry.get()
@@ -101,8 +103,8 @@ def get_passp(self, final_json, scanWindow, camera):
 
     passp_window = customtkinter.CTkToplevel(self)
     passp_window.title("Passphrase for Symmetric Decryption")
-    width = 500
-    height = 150
+    width = 550
+    height = 170
 
     screen_width = self.winfo_screenwidth()
     screen_height = self.winfo_screenheight()
@@ -117,18 +119,22 @@ def get_passp(self, final_json, scanWindow, camera):
     passp_label2 = customtkinter.CTkLabel(passp_window, text="Passphrase for Symmetric Decryption", font=customtkinter.CTkFont(size=20, weight="bold"))
     passp_label2.place(x=50,y=10)
 
-    passp_label3 = customtkinter.CTkLabel(passp_window,text ="Please put your passphrase for decryption.")
+    passp_label3 = customtkinter.CTkLabel(passp_window,text ="Please put your passphrase that you have generated in backup process")
     passp_label3.place(x=50,y=35)
 
-    passp_label4 = customtkinter.CTkLabel(passp_window,text ="Passphrase:")
-    passp_label4.place(x=50,y=65)
+    passp_label4 = customtkinter.CTkLabel(passp_window,text ="for decryption.")
+    passp_label4.place(x=50,y=60)
+
+    passp_label5 = customtkinter.CTkLabel(passp_window,text ="Passphrase:")
+    passp_label5.place(x=50,y=95)
 
     passp_entry = customtkinter.CTkEntry(passp_window, show="*")
-    passp_entry.place(x=130,y=65)
+    passp_entry.place(x=130,y=95)
 
     enter_button = customtkinter.CTkButton(passp_window, text='Enter', command=lambda: check_passp_and_import(self, final_json, passp_entry, passp_window), fg_color="darkred", hover_color="#D2042D", width=60)
-    enter_button.place(x=50,y=100)
+    enter_button.place(x=50,y=130)
 
+#Validates Scanned QR Codes
 def evaluate_packets(self, scanWindow, camera, scanned_values):
     try:
         json_list1 = []
@@ -160,7 +166,7 @@ def evaluate_packets(self, scanWindow, camera, scanned_values):
     except KeyError:
         messagebox.showinfo('Error', 'There was a problem while processing your data. Please check the QR codes you have scanned.', parent=scanWindow)
 
-
+#Deletes Scanned QR Code List
 def delete_QR_code(status_label, continue_button, scanned_packets_listbox, scanned_values):
     if len(scanned_values) == 0:
             status_label.configure(text="Error: Scanned QR Code List is empty.", font=customtkinter.CTkFont(size=15, weight="bold"), text_color="red")
@@ -246,7 +252,7 @@ def scan_qr_start(self):
                     for i in scanned_qr_data:
                         pnt = i.polygon
                         points = np.array(pnt, np.int32)
-                        points = points.reshape(-1,1,2)
+                        points = points.reshape((-1,1,2))
                         colour = 50,205,50
                         cv2.polylines(frame, [points], True, colour, 5)
                     
@@ -427,7 +433,7 @@ def shamir_scan_start(self):
                     for i in scanned_qr_data:
                         pnt = i.polygon
                         points = np.array(pnt, np.int32)
-                        points = points.reshape(-1,1,2)
+                        points = points.reshape((-1,1,2))
                         colour = 50,205,50
                         cv2.polylines(frame, [points], True, colour, 5)
 
@@ -547,6 +553,7 @@ def gen_gpg_pass(self, name, email, passphrase, input_entry5, gen_gpg_pass_win):
 
             key = gpg.gen_key(key_info)
             
+            #Pass storage initialisation
             command2 = ["pass", "init", f"{key}"]
             out2 = subprocess.check_output(command2, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
             
@@ -608,6 +615,7 @@ def get_passphrase(self, input_label, input_label2, input_entry4, email, enter_b
                 cancel_button.place(x=125,y=100)
 
 def get_email(self, input_label, input_label2, input_entry3, enter_button, gen_gpg_pass_win, name, cancel_button, instructions_label):
+    #Email Validation
     email = input_entry3.get()
     regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]{1,}\b"
     if re.fullmatch(regex, email):
@@ -637,6 +645,7 @@ def get_email(self, input_label, input_label2, input_entry3, enter_button, gen_g
         messagebox.showinfo('Invalid Email','The email address you put is not valid.', parent=gen_gpg_pass_win)
 
 def get_name(self, input_label, input_label2, input_entry2, enter_button, gen_gpg_pass_win, cancel_button, instructions_label):
+    #Name Validation
     name = input_entry2.get()
     if name == "":
         messagebox.showinfo('Invalid Name', 'Name should not be empty.', parent=gen_gpg_pass_win)
@@ -691,6 +700,7 @@ def check_auth(self, input_label, input_label2, input_entry, enter_button, gen_g
             messagebox.showinfo('Bad Passphrase', 
                                 f'Bad passphrase (try {error_count} out of 3)', parent=gen_gpg_pass_win)
 
+#Authenticates user if there is an existing pass storage
 def auth_gen_pass(self):
     gen_gpg_pass_win = customtkinter.CTkToplevel(self)
     gen_gpg_pass_win.title("Authentication for GPG Key & Pass Storage Generation")
@@ -792,8 +802,8 @@ def gen_gpg_pass_start(self):
         
 
 #References
-#Lines 163-165, 212-220, 331-333, and 379-387 are from: https://github.com/murtazahassan/OpenCV-Python-Tutorials-and-Projects/blob/master/Intermediate/QrCodeBarCode/QrBarTest.py
-#Lines 181, 221-225, 349, and 387-391 are from: https://stackoverflow.com/a/67161773/21095082
-#Lines 59-60 are from: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
-#Lines 120, 201, 204, 206, 368, 371, 373, 543, 557, 580, 602, 623, 626 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
-#Lines 59-60 and 80-81 are from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
+#Lines 191-193, 252-257, 373-375, and 433-438 are from: https://github.com/murtazahassan/OpenCV-Python-Tutorials-and-Projects/blob/master/Intermediate/QrCodeBarCode/QrBarTest.py
+#Lines 218, 259-263, 400, and 440-444 are from: https://stackoverflow.com/a/67161773/21095082
+#Lines 60-61 are from: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
+#Lines 134, 238, 241, 243, 420, 423, 425, 598, 613, 638, 662, 676, 735, 732, 766, 769 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
+#Lines 60-61 and 81-82 are from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess

@@ -17,10 +17,12 @@ import main_window
 
 customtkinter.set_appearance_mode("System")
 
+#Paths
 pwd = os.path.expanduser('~')
 qr_path = f"{pwd}/Documents/.QR-Code"
 final_qr_path = f'{pwd}/Documents/PassQR'
 
+#Global Variables
 decrypted_data = []
 sym_passp = ""
 replay = 0
@@ -55,6 +57,7 @@ def set_grid(image_list, rows, collumns):
         image_grid.paste(image, box=(i%collumns*image_width, i//collumns*image_height))
     return image_grid
 
+#Combining Images
 def combine_img(copy):
     global replay
     qr_file_count = 0
@@ -194,7 +197,8 @@ def combine_img(copy):
 
             for b in natsorted(qr_list2):
                 os.remove(b)
-            
+
+#QR Code Convertion           
 def qr_convert(password_list, copy, passp, threshold_number, self):
     global replay
     pass_data = json.dumps(password_list)
@@ -417,7 +421,8 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
 
             kill_command = ["gpgconf", "--kill", "gpg-agent"]
             kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
-            
+
+#Symmetric Encryption of Passwords            
 def sym_enc(passp, decrypted_password_data, pass_name, copy, threshold, copy_windows, self):
     copy_windows.destroy()
     password_list = []
@@ -502,6 +507,7 @@ def set_copy_number(sym_passp, decrypt_data, pass_name, copy_windows, re_passp_e
 
     exit_button.place(x=285,y=140)
 
+#Passphrase Validation
 def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, pass_name, label2, label3, label4, enterbutton, self, exit_button):
     if sym_passp == re_passp_entry.get():
         set_copy_number(sym_passp, decrypt_data, pass_name, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
@@ -519,7 +525,7 @@ def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data
         else:
             messagebox.showinfo('Bad Passphrase', f'Passphrases do not match (try {re_passp_error_count} out of 3)', parent=sym_passphrase_windows)
 
-def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, pass_name, self, exit_button, label5, label6):
+def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3, label4, enterbutton ,decrypt_data, pass_name, self, exit_button, label5, label6, label_extra):
     global sym_passp
 
     special_characters = "!@#$%^&*()-+?_=,<>/"
@@ -536,6 +542,7 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
             label4.place(x=50,y=65)
             label5.destroy()
             label6.destroy()
+            label_extra.destroy()
             re_passp_entry = customtkinter.CTkEntry(sym_passphrase_windows, validate="key", validatecommand=vcmd, show="*")
             re_passp_entry.place(x=130,y=65)
             enterbutton.place(x=50,y=100)
@@ -547,22 +554,24 @@ def get_sym_entry(sym_passphrase_windows, sym_passp_entry, vcmd, label2, label3,
     else:
         messagebox.showinfo('Empty Passphrase', 'Passphrase should not be empty.', parent=sym_passphrase_windows)
 
-def sym_enc_window(decrypt_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self):
+def sym_enc_window(decrypt_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self, label_extra):
     newWindow.title("New Passphrase Entry for Symmetric Encryption")
     newWindow.protocol("WM_DELETE_WINDOW", disable_close)
-    newWindow.geometry("530x200")
-
+    newWindow.geometry("530x220")
     passp_entry.destroy()
 
     label2.configure(text="New Passphrase Entry for Symmetric Encryption")
+    label_extra.configure(text="The encrypted versions are stored in your backups.")
+    label_extra.place(x=50,y=60)
+
     label3.configure(text= "Please create a new passphrase to encrypt your passwords.")
-    label4.place(x=50,y=120)
+    label4.place(x=50,y=140)
 
     label5 = customtkinter.CTkLabel(newWindow, text ="The passphrase you have entered should be between 8 - 30 characters")
-    label5.place(x=50,y=60)
+    label5.place(x=50,y=85)
 
     label6 = customtkinter.CTkLabel(newWindow, text ="long and contain at least 1 digit or special character.")
-    label6.place(x=50,y=85)
+    label6.place(x=50,y=110)
 
     def validate(P):
         if len(P) > 30:
@@ -573,13 +582,14 @@ def sym_enc_window(decrypt_data, pass_name, newWindow, passp_entry, enter_button
 
     vcmd = (newWindow.register(validate), '%P')
     sym_passp_entry = customtkinter.CTkEntry(newWindow, validate="key", validatecommand=vcmd, show="*")
-    sym_passp_entry.place(x=130,y=120)
+    sym_passp_entry.place(x=130,y=140)
 
-    enter_button.place(x=50,y=160)
-    exit_button.place(x=125,y=160)
-    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, pass_name, self, exit_button, label5, label6))
+    enter_button.place(x=50,y=180)
+    exit_button.place(x=125,y=180)
+    enter_button.configure(command=lambda: get_sym_entry(newWindow, sym_passp_entry, vcmd, label2, label3, label4, enter_button, decrypt_data, pass_name, self, exit_button, label5, label6, label_extra))
 
-def get_entry(newWindow, passp, pass_files, pass_name, passp_entry, enter_button, label2, label3, label4, exit_button, self):
+#Asymmetric Decryption
+def get_entry(newWindow, passp, pass_files, pass_name, passp_entry, enter_button, label2, label3, label4, exit_button, self, label_extra):
     try:
         check_files = []
         for main_path, sub_directories, files in os.walk(f"{pwd}/.password-store"):
@@ -601,7 +611,7 @@ def get_entry(newWindow, passp, pass_files, pass_name, passp_entry, enter_button
                     command1 = ["gpg", "-d", "--quiet", "--yes", "--pinentry-mode=loopback", f"--passphrase={passp}", f'{pass_files[x]}.gpg']
                     out = subprocess.check_output(command1, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
                     decrypted_data.append(out)
-                sym_enc_window(decrypted_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self)
+                sym_enc_window(decrypted_data, pass_name, newWindow, passp_entry, enter_button, label2, label3, label4, exit_button, self, label_extra)
 
             except subprocess.CalledProcessError:
                 global error_count
@@ -630,7 +640,7 @@ def asym_dec_window(self, pass_files, pass_name):
     newWindow = customtkinter.CTkToplevel(self)
     newWindow.title("Passphrase Entry for Asymmetric Decryption")
     width = 500
-    height = 150
+    height = 170
     
     screen_width = self.winfo_screenwidth()
     screen_height = self.winfo_screenheight()
@@ -645,23 +655,26 @@ def asym_dec_window(self, pass_files, pass_name):
     label2 = customtkinter.CTkLabel(newWindow, text="Passphrase Entry for Asymmetric Decryption", font=customtkinter.CTkFont(size=20, weight="bold"))
     label2.place(x=50,y=10)
 
-    label3 = customtkinter.CTkLabel(newWindow,text ="Please enter your passphrase to decrypt your passwords.")
+    label3 = customtkinter.CTkLabel(newWindow,text ="Your passwords are assymetrically encrypted inside the pass storage.")
     label3.place(x=50,y=35)
 
+    label_extra = customtkinter.CTkLabel(newWindow,text ="Please enter your existing passphrase to decrypt your passwords.")
+    label_extra.place(x=50,y=60)
+
     label4 = customtkinter.CTkLabel(newWindow,text ="Passphrase:")
-    label4.place(x=50,y=65)
+    label4.place(x=50,y=90)
     
     passp_entry = customtkinter.CTkEntry(newWindow, show="*")
-    passp_entry.place(x=130,y=65)
+    passp_entry.place(x=130,y=90)
 
-    enter_button = customtkinter.CTkButton(newWindow, text='Enter', command=lambda: get_entry(newWindow, passp_entry.get(), pass_files, pass_name, passp_entry, enter_button, label2, label3, label4, exit_button, self), fg_color="darkred", hover_color="#D2042D", width=60)
-    enter_button.place(x=50,y=100)
+    enter_button = customtkinter.CTkButton(newWindow, text='Enter', command=lambda: get_entry(newWindow, passp_entry.get(), pass_files, pass_name, passp_entry, enter_button, label2, label3, label4, exit_button, self, label_extra), fg_color="darkred", hover_color="#D2042D", width=60)
+    enter_button.place(x=50,y=125)
 
     exit_button = customtkinter.CTkButton(newWindow, text="Cancel Backup", command=lambda: cancel_convert(self, newWindow), fg_color="darkred", hover_color="#D2042D")
-    exit_button.place(x=125,y=100)
+    exit_button.place(x=125,y=125)
 
 #References
 #set_grid function is from: https://stackoverflow.com/questions/37921295/python-pil-image-make-3x3-grid-from-sequence-images
-#Lines 473, 500, 578, 646, and 649 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
-#Lines 425-426, 599-600 are implemented with the help of: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
-#Moreover, Lines 425-426 and 599-600 are also from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
+#Lines 476, 503, 588, 587, 686, and 671 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
+#Lines 428-429, 609-610 are implemented with the help of: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
+#Moreover, Lines 428-429 and 609-610 are also from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
