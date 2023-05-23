@@ -274,4 +274,4 @@ if __name__ == "__main__":
     app.mainloop()
 
 #References
-#Lines 94, 97, and 100 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
+#Lines 99, 102, and 105 are implemented with the help of https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
