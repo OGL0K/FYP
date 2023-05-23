@@ -504,7 +504,8 @@ def sym_enc(passp, decrypted_password_data, pass_name, sym_passphrase_windows, r
                     'cipher': encode.decode('ascii')+"\n"}
 
         password_list.append(password)
-
+        
+    decrypted_password_data = ""
     set_copy_number(password_list, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button, sym_passp)
     
 #Passphrase Validation
