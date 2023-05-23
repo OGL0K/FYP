@@ -199,7 +199,8 @@ def combine_img(copy):
                 os.remove(b)
 
 #QR Code Convertion           
-def qr_convert(password_list, copy, passp, threshold_number, self):
+def qr_convert(password_list, copy, passp, threshold_number, self, copy_windows):
+    copy_windows.destroy()
     global replay
     pass_data = json.dumps(password_list)
 
@@ -422,29 +423,13 @@ def qr_convert(password_list, copy, passp, threshold_number, self):
             kill_command = ["gpgconf", "--kill", "gpg-agent"]
             kill_out = subprocess.check_output(kill_command, universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
 
-#Symmetric Encryption of Passwords            
-def sym_enc(passp, decrypted_password_data, pass_name, copy, threshold, copy_windows, self):
-    copy_windows.destroy()
-    password_list = []
-    for y in range(0, len(pass_name)):
-        command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={passp}"]
-        out2 = subprocess.check_output(command2, input=decrypted_password_data[y], universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
-        encode = base64.b64encode(out2)
-
-        password = {f'File{y}':pass_name[y],
-                    'cipher': encode.decode('ascii')+"\n"}
-
-        password_list.append(password)
-    
-    qr_convert(password_list, copy, passp, threshold, self)
-
-def get_threshold_number(re_passp, decrypt_data, pass_name, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3):
+def get_threshold_number(password_list, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3, sym_passp):
     copy_number = spin_box.get()
     
     if copy_number == "1":
         copy_windows.destroy()
         threshold_number = 0
-        sym_enc(re_passp, decrypt_data, pass_name, copy_number, threshold_number, copy_windows, self)
+        qr_convert(password_list, copy_number, sym_passp, threshold_number, self, copy_windows)
 
     else:
         copy_label.destroy()
@@ -475,9 +460,9 @@ def get_threshold_number(re_passp, decrypt_data, pass_name, copy_windows, label2
     
         enterbutton.place(x=200,y=140)
         exit_button.place(x=275,y=140)
-        enterbutton.configure(command=lambda: sym_enc(re_passp, decrypt_data, pass_name, copy_number, spin_box.get(), copy_windows, self))
+        enterbutton.configure(command=lambda: qr_convert(password_list, copy_number, sym_passp, spin_box.get(), self, copy_windows))
 
-def set_copy_number(sym_passp, decrypt_data, pass_name, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
+def set_copy_number(password_list, copy_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button, sym_passp):
     copy_windows.geometry("600x190")
     copy_windows.title("Number of Copies")
     re_passp_entry.destroy()
@@ -502,15 +487,30 @@ def set_copy_number(sym_passp, decrypt_data, pass_name, copy_windows, re_passp_e
     spin_box = tk.Spinbox(copy_windows, from_=1, to=10, textvariable=current_value, width=3, state = 'readonly', wrap=True, bg="black")
     spin_box.place(x=150,y=140)
 
-    enterbutton.configure(command=lambda: get_threshold_number(sym_passp, decrypt_data, pass_name, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3))
+    enterbutton.configure(command=lambda: get_threshold_number(password_list, copy_windows, label2, label3, label4, spin_box, enterbutton, self, exit_button, copy_label, copy_label2, copy_label3, sym_passp))
     enterbutton.place(x=210,y=140)
 
     exit_button.place(x=285,y=140)
 
+#Symmetric Encryption of Passwords            
+def sym_enc(sym_passp, decrypted_password_data, pass_name, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button):
+    password_list = []
+    for y in range(0, len(pass_name)):
+        command2 = ["gpg", "--symmetric", "--cipher-algo", "AES256", "--armor", "--pinentry-mode=loopback", f"--passphrase={sym_passp}"]
+        out2 = subprocess.check_output(command2, input=decrypted_password_data[y], universal_newlines=False, shell=False, stderr=subprocess.DEVNULL)
+        encode = base64.b64encode(out2)
+
+        password = {f'File{y}':pass_name[y],
+                    'cipher': encode.decode('ascii')+"\n"}
+
+        password_list.append(password)
+
+    set_copy_number(password_list, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button, sym_passp)
+    
 #Passphrase Validation
 def check_passps(re_passp_entry, sym_passp, sym_passphrase_windows, decrypt_data, pass_name, label2, label3, label4, enterbutton, self, exit_button):
     if sym_passp == re_passp_entry.get():
-        set_copy_number(sym_passp, decrypt_data, pass_name, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
+        sym_enc(sym_passp, decrypt_data, pass_name, sym_passphrase_windows, re_passp_entry, label2, label3, label4, enterbutton, self, exit_button)
 
     else:
         global re_passp_error_count
