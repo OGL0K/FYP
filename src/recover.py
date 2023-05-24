@@ -805,5 +805,5 @@ def gen_gpg_pass_start(self):
 #Lines 191-193, 249-257, 373-375, and 430-438 are from: https://github.com/murtazahassan/OpenCV-Python-Tutorials-and-Projects/blob/master/Intermediate/QrCodeBarCode/QrBarTest.py
 #Lines 218, 259-263, 400, and 440-444 are from: https://stackoverflow.com/a/67161773/21095082
 #Lines 61 are from: https://stackoverflow.com/questions/75400145/gpg-does-not-accept-passphrase-that-begins-with-some-special-characters. Oguz Gokyuzu is my username.
-#Lines 134, 238, 241, 243, 420, 423, 425, 598, 613, 638, 662, 676, 732, 735, 732, 766, 769 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
-#Lines 61-62 and 82-83 are from: https://stackoverflow.com/questions/60860285/python-symmetric-encryption-with-gpg-and-subprocess
+#Lines 134, 238, 241, 243, 420, 423, 425, 598, 613, 638, 662, 676, 732, 735, 766, 769 are implemented with the help of: https://stackoverflow.com/questions/75480143/python-tkinter-removing-nested-functions. Oguz Gokyuzu is my username.
+#Lines 61-62 and 82-83 are from: https://stackoverflow.com/a/60860502/21095082
