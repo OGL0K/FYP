@@ -204,7 +204,7 @@ def qr_convert(password_list, copy, passp, threshold_number, self, copy_windows)
     global replay
     pass_data = json.dumps(password_list)
 
-    if sys.getsizeof(pass_data) < 1200:
+    if sys.getsizeof(pass_data) < 1000:
 
         if os.path.exists(final_qr_path):
             shutil.rmtree(final_qr_path)
